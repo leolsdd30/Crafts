@@ -18,16 +18,29 @@ class Model
     }
 
     /**
-     * A helper wrapper around PDO prepare and execute
+     * A helper wrapper around PDO prepare and execute for FETCHING
      * 
      * @param string $sql The query string
      * @param array $params The bound parameters
      * @return \PDOStatement
      */
-    protected function query($sql, $params = [])
+    protected function query($sql, $params = []): \PDOStatement
     {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt;
+    }
+
+    /**
+     * A helper wrapper around PDO for MUTATING (INSERT/UPDATE/DELETE)
+     * 
+     * @param string $sql
+     * @param array $params
+     * @return bool
+     */
+    protected function execute($sql, $params = []): bool
+    {
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($params);
     }
 }
