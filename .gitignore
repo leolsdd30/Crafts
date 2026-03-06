@@ -16,6 +16,9 @@
 /storage/*.log
 /storage/cache/
 
+# Database Dumps
+*.sql
+
 # Build Artifacts
 npm-debug.log
 yarn-error.log
