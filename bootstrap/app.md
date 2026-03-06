@@ -9,5 +9,6 @@ Sets up PHP autoloading, loads environment variables, and configures error repor
 ## Required Code & Logic
 - `require_once __DIR__ . '/../vendor/autoload.php';`
 - Loading `.env` via `vlucas/phpdotenv`.
-- Instantiating global singletons (like the Logger or Database connection).
+- Instantiating global singletons (like the Logger or the `app\Database\init.php` Database connection).
 - Setting the global timezone logic.
+- Requires the custom core MVC classes (`app/Core/Router`, `app/Core/Controller`, `app/Core/Model`).

@@ -8,6 +8,7 @@ Acts as the "Front Controller". It receives the URL, spins up the `.php` logic, 
 
 ## Required Code & Logic
 - Requires `/bootstrap/app.php`.
-- Evaluates `$_SERVER['REQUEST_URI']` to determine which controller/page to load (basic routing).
-- Displays 404 views if a route does not match.
+- Initializes the custom `app\Core\Router` class.
+- Requires `/routes/web.php` to load all valid platform URLs into the router.
+- Dispatches the router with `$_SERVER['REQUEST_URI']` to determine which controller to load.
 - This is the *only* PHP file exposed directly to web browser requests.
