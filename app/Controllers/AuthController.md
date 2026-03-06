@@ -13,7 +13,7 @@ Replaces the single-action classes in `app/Auth/` by grouping all authentication
 - Method: `processLogin()`
   - Reads `$_POST` data.
   - Validates credentials against the `users` table via the `User` model.
-  - Sets `$_SESSION['user_id']`.
+  - Sets `$_SESSION['user_id']` = `$user->id`. This is critical: it is the sole mechanism the rest of the app uses to know who is currently browsing and to populate fields like `homeowner_id`.
   - Redirects to the appropriate dashboard based on role.
 - Method: `logout()`
   - Destroys the session and redirects to `/login`.
