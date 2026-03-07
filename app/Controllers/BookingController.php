@@ -5,6 +5,7 @@ use App\Core\Controller;
 use App\Auth\Middleware;
 use App\Models\Booking;
 use App\Models\User;
+use App\Models\Message;
 
 class BookingController extends Controller
 {
@@ -80,6 +81,10 @@ class BookingController extends Controller
         ]);
 
         if ($success) {
+            // Auto-promote any pending message requests between these users
+            $msgModel = new Message();
+            $msgModel->autoPromoteOnBooking($_SESSION['user_id'], $craftsmanId);
+
             $dashboard = $_SESSION['role'] === 'craftsman' ? '/craftsman/dashboard' : '/homeowner/dashboard';
             header("Location: " . APP_URL . $dashboard . "?success=booking_requested");
             exit;
@@ -120,6 +125,10 @@ class BookingController extends Controller
         }
 
         $bookingModel->updateStatus($bookingId, 'hired');
+
+        // Auto-promote any pending message requests between these users
+        $msgModel = new Message();
+        $msgModel->autoPromoteOnBooking($booking['homeowner_id'], $booking['craftsman_id']);
 
         header("Location: " . APP_URL . "/craftsman/dashboard?success=booking_accepted");
         exit;

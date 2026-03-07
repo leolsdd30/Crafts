@@ -44,11 +44,28 @@
                             $headerUser = clone (new \App\Models\User());
                             $headerDbUser = $headerUser->findById($_SESSION['user_id']);
                             $headerPicUrl = $headerDbUser ? get_profile_picture_url($headerDbUser['profile_picture'] ?? 'default.png', $headerDbUser['first_name'], $headerDbUser['last_name']) : '';
+
+                            // Get unread message count (conversations only, not total messages)
+                            $headerMsgModel = new \App\Models\Message();
+                            $headerUnreadCount = $headerMsgModel->getUnreadConversationCount($_SESSION['user_id']);
+                            $headerRequestCount = $headerMsgModel->getPendingRequestCount($_SESSION['user_id']);
+                            $headerTotalBadge = $headerUnreadCount + $headerRequestCount;
                         ?>
                         <a href="<?= $dashboardUrl ?>" class="text-sm font-medium text-gray-500 hover:text-gray-900 border-b-2 border-transparent hover:border-indigo-600 transition-colors duration-200">
                             Dashboard
                         </a>
                         <span class="text-sm text-gray-300">|</span>
+                        <!-- Messages Icon -->
+                        <a href="<?= APP_URL ?>/messages" class="relative p-2 text-gray-400 hover:text-indigo-600 transition-colors duration-200 rounded-lg hover:bg-indigo-50" title="Messages">
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <?php if ($headerTotalBadge > 0): ?>
+                            <span id="nav-unread-badge" class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-bold <?= $headerRequestCount > 0 ? 'bg-yellow-500' : 'bg-red-500' ?> text-white min-w-[18px] leading-none ring-2 ring-white">
+                                <?= $headerTotalBadge > 99 ? '99+' : $headerTotalBadge ?>
+                            </span>
+                            <?php endif; ?>
+                        </a>
                         <a href="<?= APP_URL ?>/profile?id=<?= $_SESSION['user_id'] ?>" class="flex items-center space-x-2 hover:bg-gray-50 p-1.5 pr-3 rounded-full transition-colors duration-200 border border-transparent hover:border-gray-200" title="View Profile">
                             <?php if ($headerPicUrl): ?>
                                 <img src="<?= $headerPicUrl ?>" alt="Profile" class="w-8 h-8 rounded-full object-cover border border-gray-200">

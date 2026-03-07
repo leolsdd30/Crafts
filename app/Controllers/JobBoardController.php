@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\JobPosting;
 use App\Models\JobQuote;
+use App\Models\Message;
 use App\Auth\Middleware;
 
 class JobBoardController extends Controller
@@ -224,6 +225,10 @@ class JobBoardController extends Controller
         $success = $quoteModel->acceptQuote($quoteId);
 
         if ($success) {
+            // Auto-promote any pending message requests between homeowner and craftsman
+            $msgModel = new Message();
+            $msgModel->autoPromoteOnBooking($_SESSION['user_id'], $quote['craftsman_id']);
+
             header("Location: " . APP_URL . "/jobs/show?id=" . $quote['job_posting_id'] . "&success=quote_accepted");
         }
         else {

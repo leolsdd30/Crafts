@@ -111,18 +111,36 @@ CREATE TABLE IF NOT EXISTS `requests_bookings` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `conversations`
+--
+
+CREATE TABLE IF NOT EXISTS `conversations` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `initiator_id` INT NOT NULL,
+  `participant_id` INT NOT NULL,
+  `status` ENUM('pending', 'accepted', 'declined') DEFAULT 'pending',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE(`initiator_id`, `participant_id`),
+  FOREIGN KEY (`initiator_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`participant_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `messages`
 --
 
 CREATE TABLE IF NOT EXISTS `messages` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `booking_id` INT NOT NULL,
+  `conversation_id` INT NOT NULL,
   `sender_id` INT NOT NULL,
   `receiver_id` INT NOT NULL,
   `message_body` TEXT NOT NULL,
   `is_read` BOOLEAN DEFAULT FALSE,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`booking_id`) REFERENCES `requests_bookings`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`conversation_id`) REFERENCES `conversations`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`receiver_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

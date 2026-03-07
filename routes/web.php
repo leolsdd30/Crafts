@@ -11,6 +11,7 @@ use App\Controllers\ProfileController;
 use App\Controllers\BookingController;
 use App\Controllers\ReviewController;
 use App\Controllers\FavoriteController;
+use App\Controllers\MessageController;
 
 /**
  * Register all web routes here.
@@ -61,4 +62,13 @@ $router->post('/reviews/create', [ReviewController::class , 'store']);
 
 // Favorite Routes
 $router->post('/favorites/toggle', [FavoriteController::class , 'toggle']);
+
+// Messaging Routes
+$router->get('/messages', [MessageController::class , 'inbox']);
+$router->get('/messages/conversation', [MessageController::class , 'conversation']);
+$router->post('/messages/send', [MessageController::class , 'send']);
+$router->get('/messages/poll', [MessageController::class , 'poll']);
+$router->get('/messages/unread-count', [MessageController::class , 'unreadCount']);
+$router->post('/messages/accept-request', [MessageController::class , 'acceptRequest']);
+$router->post('/messages/decline-request', [MessageController::class , 'declineRequest']);
 
