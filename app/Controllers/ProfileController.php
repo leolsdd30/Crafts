@@ -172,14 +172,56 @@ class ProfileController extends Controller
                 'bio' => $_POST['bio'] ?? ''
             ];
 
-            // Retain old images for now until we build a full multi-file manager
+            // --- Portfolio Image Management ---
+            $uploadDir = BASE_PATH . '/public/uploads/portfolio/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            // Get old images from DB
             $existing = $craftsmanModel->findByUserId($id);
+            $oldImages = [];
             if ($existing && !empty($existing['portfolio_images'])) {
-                $data['portfolio_images'] = json_decode($existing['portfolio_images'], true);
+                $oldImages = json_decode($existing['portfolio_images'], true) ?: [];
             }
-            else {
-                $data['portfolio_images'] = [];
+
+            // Get images the user chose to KEEP (hidden inputs named existing_images[])
+            $keptImages = $_POST['existing_images'] ?? [];
+
+            // Delete removed images from disk
+            foreach ($oldImages as $oldImg) {
+                if (!in_array($oldImg, $keptImages)) {
+                    $filePath = $uploadDir . $oldImg;
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
+                }
             }
+
+            // Upload new images
+            $newImages = [];
+            if (!empty($_FILES['portfolio_images']['name'][0])) {
+                $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                $maxFiles = 10 - count($keptImages); // Enforce max 10 total
+
+                for ($i = 0; $i < min(count($_FILES['portfolio_images']['name']), $maxFiles); $i++) {
+                    if ($_FILES['portfolio_images']['error'][$i] === UPLOAD_ERR_OK) {
+                        $tmpName = $_FILES['portfolio_images']['tmp_name'][$i];
+                        $origName = basename($_FILES['portfolio_images']['name'][$i]);
+                        $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+
+                        if (in_array($ext, $allowedExts) && $_FILES['portfolio_images']['size'][$i] <= 5 * 1024 * 1024) {
+                            $newName = time() . '_' . uniqid() . '_' . $i . '.' . $ext;
+                            if (move_uploaded_file($tmpName, $uploadDir . $newName)) {
+                                $newImages[] = $newName;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Merge kept + new
+            $data['portfolio_images'] = array_merge($keptImages, $newImages);
 
             $craftsmanModel->updateOrCreate($id, $data);
         }

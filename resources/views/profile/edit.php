@@ -135,6 +135,66 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Portfolio Section -->
+                    <div>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4 border-b border-gray-200 pb-2 flex items-center">
+                            <svg class="mr-2 h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Portfolio Images
+                        </h3>
+
+                        <?php 
+                            $existingImages = [];
+                            if (!empty($craftsmanDetails['portfolio_images'])) {
+                                $existingImages = json_decode($craftsmanDetails['portfolio_images'], true) ?: [];
+                            }
+                        ?>
+
+                        <!-- Existing Images Grid -->
+                        <?php if (!empty($existingImages)): ?>
+                        <div class="mb-6">
+                            <p class="text-sm text-gray-500 mb-3">Your current portfolio (<span id="portfolio-count"><?= count($existingImages) ?></span> images). Click the × to remove.</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="existing-portfolio">
+                                <?php foreach ($existingImages as $index => $img): ?>
+                                <div class="relative group rounded-xl overflow-hidden border border-gray-200 shadow-sm aspect-square" id="portfolio-item-<?= $index ?>">
+                                    <img src="<?= APP_URL ?>/uploads/portfolio/<?= htmlspecialchars($img) ?>" 
+                                         alt="Portfolio piece" 
+                                         class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200"></div>
+                                    <button type="button" 
+                                            onclick="removePortfolioImage(<?= $index ?>, '<?= htmlspecialchars($img) ?>')" 
+                                            class="absolute top-2 right-2 bg-red-500 text-white rounded-full h-7 w-7 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600 shadow-lg">
+                                        ×
+                                    </button>
+                                    <input type="hidden" name="existing_images[]" value="<?= htmlspecialchars($img) ?>" id="input-portfolio-<?= $index ?>">
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- Upload New Images -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Add New Images</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-400 transition-colors duration-200 cursor-pointer relative" 
+                                 id="portfolio-dropzone"
+                                 onclick="document.getElementById('portfolio-upload').click()">
+                                <input type="file" name="portfolio_images[]" id="portfolio-upload" multiple 
+                                       accept="image/png,image/jpeg,image/gif,image/webp" 
+                                       class="sr-only" 
+                                       onchange="previewPortfolioImages(event)">
+                                <svg class="mx-auto h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600 font-medium">Click to upload images</p>
+                                <p class="text-xs text-gray-400 mt-1">JPG, PNG, GIF or WebP · Max 5MB each · Up to 10 images total</p>
+                            </div>
+                            <!-- New Image Previews -->
+                            <div id="portfolio-new-previews" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 hidden"></div>
+                        </div>
+                    </div>
                     <?php endif; ?>
                     <div class="pt-5 border-t border-gray-200">
                         <div class="flex justify-end gap-3">
@@ -181,5 +241,59 @@
         // Hide the current image visually to show it's "removed"
         document.getElementById('profile-preview').style.opacity = '0.3';
         document.getElementById('remove-btn').style.display = 'none';
+    }
+
+    // Portfolio Management
+    function removePortfolioImage(index, filename) {
+        var item = document.getElementById('portfolio-item-' + index);
+        var input = document.getElementById('input-portfolio-' + index);
+        if (item) {
+            item.style.opacity = '0';
+            item.style.transform = 'scale(0.8)';
+            item.style.transition = 'all 0.3s ease';
+            setTimeout(function() { 
+                item.remove(); 
+                updatePortfolioCount();
+            }, 300);
+        }
+        if (input) input.remove();
+    }
+
+    function updatePortfolioCount() {
+        var countEl = document.getElementById('portfolio-count');
+        if (countEl) {
+            var remaining = document.querySelectorAll('#existing-portfolio [id^="portfolio-item-"]').length;
+            countEl.textContent = remaining;
+        }
+    }
+
+    function previewPortfolioImages(event) {
+        var container = document.getElementById('portfolio-new-previews');
+        container.innerHTML = '';
+        var files = event.target.files;
+        if (files.length === 0) {
+            container.classList.add('hidden');
+            return;
+        }
+        container.classList.remove('hidden');
+        for (var i = 0; i < files.length; i++) {
+            (function(file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var div = document.createElement('div');
+                    div.className = 'relative rounded-xl overflow-hidden border-2 border-indigo-200 shadow-sm aspect-square';
+                    div.innerHTML = '<img src="' + e.target.result + '" alt="Preview" class="w-full h-full object-cover">' +
+                        '<div class="absolute bottom-0 inset-x-0 bg-indigo-600 bg-opacity-80 px-2 py-1 text-center">' +
+                        '<span class="text-xs text-white font-medium">New</span></div>';
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            })(files[i]);
+        }
+
+        // Update dropzone text
+        var dropzone = document.getElementById('portfolio-dropzone');
+        var pEl = dropzone.querySelector('p');
+        if (pEl) pEl.textContent = files.length + ' image' + (files.length > 1 ? 's' : '') + ' selected';
     }
 </script>   

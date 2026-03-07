@@ -9,7 +9,7 @@
     <!-- Main Content Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
         <div class="bg-white shadow-xl rounded-xl mt-8">
-            <div class="grid grid-cols-1 md:grid-cols-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 items-start">
                 
                 <!-- Left Column (Sticky Sidebar) -->
                 <div class="md:col-span-1 border-r border-gray-100 bg-white p-6 md:p-8 flex flex-col pt-0 sm:rounded-l-xl">
@@ -138,15 +138,18 @@
 
                     <!-- Portfolio Section -->
                     <div class="mb-10">
+                        <?php 
+                            $images = !empty($craftsmanDetails['portfolio_images']) ? json_decode($craftsmanDetails['portfolio_images'], true) : [];
+                        ?>
                         <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
                             <svg class="mr-2 h-6 w-6 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             Portfolio
+                            <?php if (!empty($images)): ?>
+                            <span class="ml-2 text-sm font-medium text-gray-400">(<?= count($images) ?> photos)</span>
+                            <?php endif; ?>
                         </h2>
-                        <?php 
-                            $images = !empty($craftsmanDetails['portfolio_images']) ? json_decode($craftsmanDetails['portfolio_images'], true) : [];
-                        ?>
                         <?php if (empty($images)): ?>
                             <div class="bg-gray-100 rounded-lg p-8 text-center border-2 border-dashed border-gray-200">
                                 <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,9 +159,17 @@
                             </div>
                         <?php else: ?>
                             <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                                <?php foreach ($images as $img): ?>
-                                    <div class="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden bg-gray-100 group">
-                                        <img src="<?= APP_URL ?>/uploads/portfolio/<?= htmlspecialchars($img) ?>" alt="Portfolio piece" class="object-cover group-hover:opacity-75 transition-opacity duration-200">
+                                <?php foreach ($images as $idx => $img): ?>
+                                    <div class="relative aspect-w-1 aspect-h-1 rounded-xl overflow-hidden bg-gray-100 group cursor-pointer shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200" 
+                                         onclick="openLightbox(<?= $idx ?>)">
+                                        <img src="<?= APP_URL ?>/uploads/portfolio/<?= htmlspecialchars($img) ?>" 
+                                             alt="Portfolio piece" 
+                                             class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300">
+                                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center pointer-events-none">
+                                            <svg class="h-8 w-8 text-white opacity-0 group-hover:opacity-80 transition-opacity duration-200 drop-shadow-lg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                            </svg>
+                                        </div>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
@@ -281,6 +292,39 @@
 </div>
 <?php endif; ?>
 
+<!-- Portfolio Lightbox Modal -->
+<?php if ($user['role'] === 'craftsman' && !empty($images)): ?>
+<div id="portfolio-lightbox" class="fixed inset-0 z-50 hidden">
+    <div class="fixed inset-0 bg-black bg-opacity-90 transition-opacity" onclick="closeLightbox()"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <!-- Close Button -->
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors p-2">
+            <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <!-- Counter -->
+        <div class="absolute top-4 left-4 z-10 text-white text-sm font-medium bg-black bg-opacity-50 px-3 py-1.5 rounded-full">
+            <span id="lightbox-counter"></span>
+        </div>
+        <!-- Prev Button -->
+        <button onclick="lightboxPrev()" class="absolute left-4 z-10 text-white hover:text-gray-300 transition-colors p-3 rounded-full bg-black bg-opacity-30 hover:bg-opacity-50">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+        <!-- Image -->
+        <img id="lightbox-image" src="" alt="Portfolio" class="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl">
+        <!-- Next Button -->
+        <button onclick="lightboxNext()" class="absolute right-4 z-10 text-white hover:text-gray-300 transition-colors p-3 rounded-full bg-black bg-opacity-30 hover:bg-opacity-50">
+            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+</div>
+<?php endif; ?>
+
     <!-- Reviews Section (Craftsman only) -->
     <?php if ($user['role'] === 'craftsman'): ?>
     <div class="max-w-4xl mx-auto mt-10 px-4">
@@ -399,4 +443,44 @@ async function toggleFavorite(craftsmanId, btnElement) {
         window.location.reload();
     }
 }
+
+// Portfolio Lightbox
+var portfolioImages = <?= json_encode(!empty($images) ? $images : []) ?>;
+var lightboxIndex = 0;
+
+function openLightbox(index) {
+    lightboxIndex = index;
+    updateLightbox();
+    document.getElementById('portfolio-lightbox').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    document.getElementById('portfolio-lightbox').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+function lightboxPrev() {
+    lightboxIndex = (lightboxIndex - 1 + portfolioImages.length) % portfolioImages.length;
+    updateLightbox();
+}
+
+function lightboxNext() {
+    lightboxIndex = (lightboxIndex + 1) % portfolioImages.length;
+    updateLightbox();
+}
+
+function updateLightbox() {
+    var img = document.getElementById('lightbox-image');
+    img.src = '<?= APP_URL ?>/uploads/portfolio/' + portfolioImages[lightboxIndex];
+    document.getElementById('lightbox-counter').textContent = (lightboxIndex + 1) + ' / ' + portfolioImages.length;
+}
+
+document.addEventListener('keydown', function(e) {
+    var lb = document.getElementById('portfolio-lightbox');
+    if (!lb || lb.classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lightboxPrev();
+    if (e.key === 'ArrowRight') lightboxNext();
+});
 </script>
