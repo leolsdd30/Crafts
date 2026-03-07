@@ -8,29 +8,73 @@
             <p class="text-gray-500 mb-6">Browse verified craftsmen with experience in your specific home project needs.</p>
 
             <!-- Search Form -->
-            <form action="<?= APP_URL ?>/search" method="GET" class="bg-white p-6 shadow-sm rounded-lg flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                <div class="flex-grow">
-                    <label for="q" class="sr-only">Search</label>
-                    <input type="text" name="q" id="q" value="<?= htmlspecialchars($filters['search'] ?? '') ?>" placeholder="Search by name, skill, or bio keywords..."
-                        class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-4 py-2 border">
+            <form action="<?= APP_URL ?>/search" method="GET" class="bg-white p-6 shadow-sm rounded-lg space-y-4">
+                <!-- Row 1: Text Search -->
+                <div class="flex flex-col md:flex-row gap-3">
+                    <div class="flex-grow">
+                        <label for="q" class="sr-only">Search</label>
+                        <input type="text" name="q" id="q" value="<?= htmlspecialchars($filters['search'] ?? '') ?>" placeholder="Search by name, skill, or bio keywords..."
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-4 py-2.5 border">
+                    </div>
+                    <button type="submit" class="inline-flex justify-center items-center px-6 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                        <svg class="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                        Search
+                    </button>
                 </div>
-                <div class="md:w-64">
-                    <label for="category" class="sr-only">Category</label>
-                    <select name="category" id="category" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-4 py-2 border bg-white">
-                        <option value="">All Categories</option>
-                        <?php
-                            $categories = ["Plumbing", "Electrical", "Carpentry", "Painting", "Roofing", "HVAC", "Landscaping", "Tiling", "General Handyman"];
-                            foreach ($categories as $cat):
-                        ?>
-                            <option value="<?= $cat ?>" <?= (isset($filters['category']) && $filters['category'] === $cat) ? 'selected' : '' ?>><?= $cat ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <!-- Row 2: Filters -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="sm:flex-1">
+                        <label for="category" class="block text-xs font-medium text-gray-500 mb-1">Category</label>
+                        <select name="category" id="category" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-4 py-2 border bg-white">
+                            <option value="">All Categories</option>
+                            <?php
+                                $categories = ["Plumbing", "Electrical", "Carpentry", "Painting", "Roofing", "HVAC", "Landscaping", "Tiling", "General Handyman"];
+                                foreach ($categories as $cat):
+                            ?>
+                                <option value="<?= $cat ?>" <?= (isset($filters['category']) && $filters['category'] === $cat) ? 'selected' : '' ?>><?= $cat ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="sm:flex-1">
+                        <label for="wilaya" class="block text-xs font-medium text-gray-500 mb-1">Wilaya</label>
+                        <select name="wilaya" id="wilaya" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-4 py-2 border bg-white">
+                            <option value="">All Regions</option>
+                            <?php 
+                                $wilayas = [
+                                    "01 - Adrar", "02 - Chlef", "03 - Laghouat", "04 - Oum El Bouaghi", "05 - Batna", "06 - Béjaïa", "07 - Biskra", "08 - Béchar", "09 - Blida", "10 - Bouira",
+                                    "11 - Tamanrasset", "12 - Tébessa", "13 - Tlemcen", "14 - Tiaret", "15 - Tizi Ouzou", "16 - Alger", "17 - Djelfa", "18 - Jijel", "19 - Sétif", "20 - Saïda",
+                                    "21 - Skikda", "22 - Sidi Bel Abbès", "23 - Annaba", "24 - Guelma", "25 - Constantine", "26 - Médéa", "27 - Mostaganem", "28 - M'Sila", "29 - Mascara", "30 - Ouargla",
+                                    "31 - Oran", "32 - El Bayadh", "33 - Illizi", "34 - Bordj Bou Arréridj", "35 - Boumerdès", "36 - El Tarf", "37 - Tindouf", "38 - Tissemsilt", "39 - El Oued", "40 - Khenchela",
+                                    "41 - Souk Ahras", "42 - Tipaza", "43 - Mila", "44 - Aïn Defla", "45 - Naâma", "46 - Aïn Témouchent", "47 - Ghardaïa", "48 - Relizane", "49 - Timimoun", "50 - Bordj Badji Mokhtar",
+                                    "51 - Ouled Djellal", "52 - Béni Abbès", "53 - In Salah", "54 - In Guezzam", "55 - Touggourt", "56 - Djanet", "57 - El M'Ghair", "58 - El Meniaa"
+                                ];
+                                foreach($wilayas as $w):
+                            ?>
+                                <option value="<?= $w ?>" <?= (isset($filters['wilaya']) && $filters['wilaya'] === $w) ? 'selected' : '' ?>><?= $w ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="sm:flex-1">
+                        <label for="sort" class="block text-xs font-medium text-gray-500 mb-1">Sort By</label>
+                        <select name="sort" id="sort" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-4 py-2 border bg-white">
+                            <option value="" <?= empty($filters['sort']) ? 'selected' : '' ?>>Newest First</option>
+                            <option value="rate_low" <?= (($filters['sort'] ?? '') === 'rate_low') ? 'selected' : '' ?>>Rate: Low to High</option>
+                            <option value="rate_high" <?= (($filters['sort'] ?? '') === 'rate_high') ? 'selected' : '' ?>>Rate: High to Low</option>
+                        </select>
+                    </div>
                 </div>
-                <button type="submit" class="inline-flex justify-center px-6 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                    Search
-                </button>
-                <?php if (!empty($filters['search']) || !empty($filters['category'])): ?>
-                    <a href="<?= APP_URL ?>/search" class="text-xs text-gray-400 mt-2 block text-center underline">Clear filters</a>
+                <!-- Clear Filters -->
+                <?php if (!empty($filters['search']) || !empty($filters['category']) || !empty($filters['wilaya']) || !empty($filters['sort'])): ?>
+                <div class="flex justify-center pt-1">
+                    <a href="<?= APP_URL ?>/search" class="inline-flex items-center text-xs text-red-500 hover:text-red-700 font-medium transition-colors duration-150">
+                        <svg class="h-3.5 w-3.5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Clear all filters
+                    </a>
+                </div>
                 <?php endif; ?>
             </form>
         </div>
@@ -55,6 +99,14 @@
                                 <?php endif; ?>
                             </h2>
                             <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600"><?= htmlspecialchars($craft['service_category']) ?></p>
+                            <?php if (!empty($craft['wilaya'])): ?>
+                            <p class="text-xs font-medium text-gray-500 mt-1 flex items-center">
+                                <svg class="h-3 w-3 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                </svg>
+                                <?= htmlspecialchars(preg_replace('/^\d{2}\s-\s/', '', $craft['wilaya'])) ?>
+                            </p>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -62,15 +114,19 @@
                     <p class="text-sm text-gray-500 line-clamp-3 mb-4"><?= htmlspecialchars($craft['bio']) ?></p>
                     <?php endif; ?>
 
-                    <div class="flex items-center justify-between text-sm py-3 border-t border-gray-50">
+                    <div class="flex items-center justify-between text-sm py-3 border-t border-gray-100 mt-auto">
                         <div>
-                            <span class="text-gray-400">Hourly Rate</span>
-                            <p class="font-bold text-gray-900">$<?= number_format($craft['hourly_rate'], 2) ?></p>
+                            <span class="text-xs text-gray-400 uppercase tracking-wider">Hourly Rate</span>
+                            <p class="font-bold text-gray-900 text-base">$<?= number_format($craft['hourly_rate'], 2) ?></p>
                         </div>
-                        <div class="text-right">
-                            <span class="text-gray-400">Success Rate</span>
-                            <p class="font-bold text-gray-900">100%</p>
-                        </div>
+                        <?php if ($craft['is_verified']): ?>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            Verified
+                        </span>
+                        <?php endif; ?>
                     </div>
                 </div>
 

@@ -8,12 +8,12 @@
 
     <!-- Main Content Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
-        <div class="bg-white shadow-xl rounded-xl overflow-hidden mt-8">
+        <div class="bg-white shadow-xl rounded-xl mt-8">
             <div class="grid grid-cols-1 md:grid-cols-3">
                 
                 <!-- Left Column (Sticky Sidebar) -->
-                <div class="md:col-span-1 border-r border-gray-100 bg-white p-6 md:p-8 flex flex-col pt-0 mt-[-3rem]">
-                    <div class="relative w-32 h-32 mx-auto md:mx-0 mb-6 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-white">
+                <div class="md:col-span-1 border-r border-gray-100 bg-white p-6 md:p-8 flex flex-col pt-0 sm:rounded-l-xl">
+                    <div class="relative w-32 h-32 mx-auto md:mx-0 mb-6 rounded-full ring-4 ring-white shadow-lg bg-white -mt-16 overflow-hidden">
                         <img src="<?= get_profile_picture_url($user['profile_picture'] ?? 'default.png', $user['first_name'], $user['last_name']) ?>" 
                              alt="<?= htmlspecialchars($user['first_name']) ?>'s profile picture" class="object-cover w-full h-full">
                     </div>
@@ -31,6 +31,14 @@
                             <?= $user['role'] === 'craftsman' ? htmlspecialchars($craftsmanDetails['service_category'] ?? 'Professional') : 'Homeowner' ?>
                         </p>
                         <p class="text-sm text-gray-500 mt-1">Member since <?= date('Y', strtotime($user['created_at'])) ?></p>
+                        <?php if (!empty($user['wilaya'])): ?>
+                        <div class="mt-3 flex items-center justify-center md:justify-start text-sm text-gray-600">
+                            <svg class="h-4 w-4 mr-1.5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                            </svg>
+                            <?= htmlspecialchars($user['wilaya']) ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
 
                     <?php if ($user['role'] === 'craftsman'): ?>
@@ -40,51 +48,44 @@
                             <span class="block text-3xl font-bold text-indigo-600">$<?= number_format($craftsmanDetails['hourly_rate'] ?? 0, 2) ?></span>
                         </div>
                     </div>
-
-                    <div class="mt-auto space-y-3">
-                        <?php if(!isset($_SESSION['user_id']) || $_SESSION['user_id'] != $user['id']): ?>
-                        <a href="mailto:<?= htmlspecialchars($user['email']) ?>" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                            Send Message
-                        </a>
-                        <button onclick="alert('Direct booking system coming in Step 7!')" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                            Request Booking
-                        </button>
+                    <?php endif; ?>
+                    <div class="mt-auto space-y-3 pt-6 border-t border-gray-100">
+                        <?php if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] != $user['id']): ?>
+                            <a href="mailto:<?= htmlspecialchars($user['email']) ?>" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                                Send Message
+                            </a>
+                            <button onclick="alert('Direct booking system coming in Step 7!')" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                                Request Booking
+                            </button>
                         <?php else: ?>
-                        <a href="<?= APP_URL ?>/profile/edit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                            <svg class="mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                            </svg>
-                            Edit Profile
-                        </a>
-                        <?php endif; ?>
-                    </div>
-                    <?php endif; ?>
-                    
-                    <!-- Include logout button here instead of navbar if looking at own profile -->
-                    <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['id']): ?>
-                    <div class="mt-4 pt-4 border-t border-gray-100 space-y-3 mt-auto">
-                        <?php if ($user['role'] === 'craftsman'): ?>
-                        <button onclick="openLaunchModal()" class="w-full inline-flex justify-center flex-col items-center px-4 py-3 border border-indigo-600 shadow-lg text-sm font-bold rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 relative overflow-hidden group">
-                            <span class="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
-                            <span class="relative flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                            <a href="<?= APP_URL ?>/profile/edit" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-indigo-200 shadow-sm text-sm font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                                <svg class="mr-2 h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                 </svg>
-                                Launch Card
-                            </span>
-                        </button>
-                        <?php endif; ?>
+                                Edit Profile
+                            </a>
 
-                        <a href="<?= APP_URL ?>/logout" class="w-full inline-flex justify-center items-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150">
-                            Logout
-                        </a>
+                            <?php if ($user['role'] === 'craftsman'): ?>
+                            <button onclick="openLaunchModal()" class="w-full inline-flex justify-center flex-col items-center px-4 py-2.5 border border-transparent shadow-lg text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 relative overflow-hidden group">
+                                <span class="relative flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                                    </svg>
+                                    Launch Card
+                                </span>
+                            </button>
+                            <?php endif; ?>
+
+                            <a href="<?= APP_URL ?>/logout" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-transparent text-sm font-bold rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 focus:outline-none transition duration-150 mt-4">
+                                Logout
+                            </a>
+                        <?php endif; ?>
                     </div>
-                    <?php endif; ?>
 
                 </div>
 
                 <!-- Right Column (Main Content) -->
-                <div class="md:col-span-2 p-6 md:p-8 bg-gray-50/50">
+                <div class="md:col-span-2 p-6 md:p-8 bg-gray-50/50 sm:rounded-r-xl">
                     
                     <?php if ($user['role'] === 'craftsman'): ?>
                     <!-- Bio Section -->
@@ -266,4 +267,3 @@ function confirmLaunch() {
 }
 </script>
 <?php endif; ?>
-                                    

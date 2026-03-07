@@ -15,7 +15,9 @@ class SearchController extends Controller
 
         $filters = [
             'category' => $_GET['category'] ?? null,
-            'search' => $_GET['q'] ?? null
+            'search' => $_GET['q'] ?? null,
+            'wilaya' => $_GET['wilaya'] ?? null,
+            'sort' => $_GET['sort'] ?? null
         ];
 
         $craftsmen = $craftsmanModel->getAllCraftsmen($filters);

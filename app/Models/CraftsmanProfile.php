@@ -11,7 +11,7 @@ class CraftsmanProfile extends Model
      */
     public function getAllCraftsmen($filters = [])
     {
-        $sql = "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture 
+        $sql = "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.wilaya 
                 FROM craftsmen_profiles cp
                 JOIN users u ON cp.user_id = u.id
                 WHERE u.is_active = TRUE";
@@ -23,12 +23,26 @@ class CraftsmanProfile extends Model
             $params['category'] = $filters['category'];
         }
 
-        if (!empty($filters['search'])) {
-            $sql .= " AND (u.first_name LIKE :search OR u.last_name LIKE :search OR cp.bio LIKE :search)";
-            $params['search'] = '%' . $filters['search'] . '%';
+        if (!empty($filters['wilaya'])) {
+            $sql .= " AND u.wilaya = :wilaya";
+            $params['wilaya'] = $filters['wilaya'];
         }
 
-        $sql .= " ORDER BY cp.is_verified DESC, cp.id DESC";
+        if (!empty($filters['search'])) {
+            $sql .= " AND (u.first_name LIKE :search1 OR u.last_name LIKE :search2 OR cp.bio LIKE :search3)";
+            $params['search1'] = '%' . $filters['search'] . '%';
+            $params['search2'] = '%' . $filters['search'] . '%';
+            $params['search3'] = '%' . $filters['search'] . '%';
+        }
+
+        $sort = $filters['sort'] ?? '';
+        if ($sort === 'rate_low') {
+            $sql .= " ORDER BY cp.is_verified DESC, cp.hourly_rate ASC, cp.id DESC";
+        } elseif ($sort === 'rate_high') {
+            $sql .= " ORDER BY cp.is_verified DESC, cp.hourly_rate DESC, cp.id DESC";
+        } else {
+            $sql .= " ORDER BY cp.is_verified DESC, cp.id DESC";
+        }
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -41,7 +55,7 @@ class CraftsmanProfile extends Model
     public function findByUserId($userId)
     {
         $stmt = $this->db->prepare(
-            "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.phone_number 
+            "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.phone_number, u.wilaya 
              FROM craftsmen_profiles cp
              JOIN users u ON cp.user_id = u.id
              WHERE cp.user_id = :user_id"

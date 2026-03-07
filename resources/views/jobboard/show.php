@@ -3,7 +3,12 @@
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div class="mb-6">
-            <a href="<?= APP_URL ?>/jobs" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">&larr; Back to Job Board</a>
+            <a href="<?= APP_URL ?>/jobs" onclick="if(document.referrer) { event.preventDefault(); window.history.back(); }" class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200 bg-white px-3 py-1.5 rounded-md shadow-sm border border-gray-100 w-fit">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                Go Back
+            </a>
         </div>
 
         <!-- Success / Error Messages -->

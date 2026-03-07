@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password_hash` VARCHAR(255) NOT NULL,
   `role` ENUM('homeowner', 'craftsman', 'admin') DEFAULT 'homeowner',
   `phone_number` VARCHAR(20) NULL,
+  `wilaya` VARCHAR(100) NULL,
   `profile_picture` VARCHAR(255) DEFAULT 'default.png',
   `is_active` BOOLEAN DEFAULT TRUE,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -14,12 +14,21 @@ class JobBoardController extends Controller
     public function index()
     {
         $jobModel = new JobPosting();
-        $jobs = $jobModel->getOpenJobs();
+
+        $filters = [
+            'category' => $_GET['category'] ?? null,
+            'search' => $_GET['q'] ?? null,
+            'wilaya' => $_GET['wilaya'] ?? null,
+            'sort' => $_GET['sort'] ?? null
+        ];
+
+        $jobs = $jobModel->getOpenJobs($filters);
 
         $this->view('layouts/app', [
             'pageTitle' => 'Browse Jobs - CraftConnect',
             'contentView' => 'jobboard/index',
-            'jobs' => $jobs
+            'jobs' => $jobs,
+            'filters' => $filters
         ]);
     }
 

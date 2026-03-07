@@ -62,10 +62,32 @@
                                     <input type="text" name="last_name" id="last_name" required value="<?= htmlspecialchars($user['last_name']) ?>" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-2 border">
                                 </div>
                             </div>
-                            <div class="sm:col-span-2">
+                            <div>
                                 <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
                                 <div class="mt-1">
-                                    <input type="tel" name="phone_number" id="phone_number" value="<?= htmlspecialchars($user['phone_number'] ?? '') ?>" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-2 border" placeholder="(555) 123-4567">
+                                    <input type="tel" name="phone_number" id="phone_number" value="<?= htmlspecialchars($user['phone_number'] ?? '') ?>" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-2 border" placeholder="0555 123 456">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="wilaya" class="block text-sm font-medium text-gray-700">Location (Wilaya)</label>
+                                <div class="mt-1">
+                                    <select id="wilaya" name="wilaya" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-2 border bg-white">
+                                        <option value="">Select your Wilaya</option>
+                                        <?php 
+                                            $wilayas = [
+                                                "01 - Adrar", "02 - Chlef", "03 - Laghouat", "04 - Oum El Bouaghi", "05 - Batna", "06 - Béjaïa", "07 - Biskra", "08 - Béchar", "09 - Blida", "10 - Bouira",
+                                                "11 - Tamanrasset", "12 - Tébessa", "13 - Tlemcen", "14 - Tiaret", "15 - Tizi Ouzou", "16 - Alger", "17 - Djelfa", "18 - Jijel", "19 - Sétif", "20 - Saïda",
+                                                "21 - Skikda", "22 - Sidi Bel Abbès", "23 - Annaba", "24 - Guelma", "25 - Constantine", "26 - Médéa", "27 - Mostaganem", "28 - M'Sila", "29 - Mascara", "30 - Ouargla",
+                                                "31 - Oran", "32 - El Bayadh", "33 - Illizi", "34 - Bordj Bou Arréridj", "35 - Boumerdès", "36 - El Tarf", "37 - Tindouf", "38 - Tissemsilt", "39 - El Oued", "40 - Khenchela",
+                                                "41 - Souk Ahras", "42 - Tipaza", "43 - Mila", "44 - Aïn Defla", "45 - Naâma", "46 - Aïn Témouchent", "47 - Ghardaïa", "48 - Relizane", "49 - Timimoun", "50 - Bordj Badji Mokhtar",
+                                                "51 - Ouled Djellal", "52 - Béni Abbès", "53 - In Salah", "54 - In Guezzam", "55 - Touggourt", "56 - Djanet", "57 - El M'Ghair", "58 - El Meniaa"
+                                            ];
+                                            $selectedWilaya = $user['wilaya'] ?? '';
+                                            foreach($wilayas as $w):
+                                        ?>
+                                            <option value="<?= $w ?>" <?= $w === $selectedWilaya ? 'selected' : '' ?>><?= $w ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                             </div>
                         </div>

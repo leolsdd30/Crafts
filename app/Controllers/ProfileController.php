@@ -92,16 +92,18 @@ class ProfileController extends Controller
         $firstName = trim($_POST['first_name'] ?? '');
         $lastName = trim($_POST['last_name'] ?? '');
         $phone = trim($_POST['phone_number'] ?? '');
+        $wilaya = trim($_POST['wilaya'] ?? '');
 
         // Handle basic User table updates
         $userModel = new User();
         $user = $userModel->findById($id);
 
-        $sql = "UPDATE users SET first_name = :first_name, last_name = :last_name, phone_number = :phone_number WHERE id = :id";
+        $sql = "UPDATE users SET first_name = :first_name, last_name = :last_name, phone_number = :phone_number, wilaya = :wilaya WHERE id = :id";
         $userModel->executeQuery($sql, [
             'first_name' => $firstName,
             'last_name' => $lastName,
             'phone_number' => $phone,
+            'wilaya' => $wilaya,
             'id' => $id
         ]);
 

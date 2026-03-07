@@ -39,12 +39,20 @@
                             $dashboardUrl = $_SESSION['role'] === 'craftsman' 
                                 ? APP_URL . '/craftsman/dashboard' 
                                 : APP_URL . '/homeowner/dashboard';
+                                
+                            // Quick DB lookup to ensure we have the freshest profile picture
+                            $headerUser = clone (new \App\Models\User());
+                            $headerDbUser = $headerUser->findById($_SESSION['user_id']);
+                            $headerPicUrl = $headerDbUser ? get_profile_picture_url($headerDbUser['profile_picture'] ?? 'default.png', $headerDbUser['first_name'], $headerDbUser['last_name']) : '';
                         ?>
                         <a href="<?= $dashboardUrl ?>" class="text-sm font-medium text-gray-500 hover:text-gray-900 border-b-2 border-transparent hover:border-indigo-600 transition-colors duration-200">
                             Dashboard
                         </a>
                         <span class="text-sm text-gray-300">|</span>
-                        <a href="<?= APP_URL ?>/profile?id=<?= $_SESSION['user_id'] ?>" class="flex items-center space-x-2 hover:bg-gray-50 p-2 rounded-md transition-colors duration-200" title="View Profile">
+                        <a href="<?= APP_URL ?>/profile?id=<?= $_SESSION['user_id'] ?>" class="flex items-center space-x-2 hover:bg-gray-50 p-1.5 pr-3 rounded-full transition-colors duration-200 border border-transparent hover:border-gray-200" title="View Profile">
+                            <?php if ($headerPicUrl): ?>
+                                <img src="<?= $headerPicUrl ?>" alt="Profile" class="w-8 h-8 rounded-full object-cover border border-gray-200">
+                            <?php endif; ?>
                             <span class="text-sm font-semibold text-gray-700"><?= htmlspecialchars($_SESSION['name']) ?></span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $_SESSION['role'] === 'craftsman' ? 'bg-indigo-100 text-indigo-800' : 'bg-green-100 text-green-800' ?> capitalize">
                                 <?= htmlspecialchars($_SESSION['role']) ?>

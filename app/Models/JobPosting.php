@@ -27,17 +27,42 @@ class JobPosting extends Model
     }
 
     /**
-     * Get all currently open jobs.
+     * Get all currently open jobs with optional filters.
      */
-    public function getOpenJobs()
+    public function getOpenJobs($filters = [])
     {
-        $stmt = $this->db->query(
-            "SELECT j.*, u.first_name, u.last_name 
-             FROM job_postings j
-             JOIN users u ON j.posted_by_user_id = u.id
-             WHERE j.status = 'open'
-             ORDER BY j.created_at DESC"
-        );
+        $sql = "SELECT j.*, u.first_name, u.last_name 
+                FROM job_postings j
+                JOIN users u ON j.posted_by_user_id = u.id
+                WHERE j.status = 'open'";
+
+        $params = [];
+
+        if (!empty($filters['category'])) {
+            $sql .= " AND j.service_category = :category";
+            $params['category'] = $filters['category'];
+        }
+
+        if (!empty($filters['wilaya'])) {
+            $sql .= " AND j.address = :wilaya";
+            $params['wilaya'] = $filters['wilaya'];
+        }
+
+        if (!empty($filters['search'])) {
+            $sql .= " AND (j.title LIKE :search1 OR j.description LIKE :search2)";
+            $params['search1'] = '%' . $filters['search'] . '%';
+            $params['search2'] = '%' . $filters['search'] . '%';
+        }
+
+        $sort = $filters['sort'] ?? '';
+        if ($sort === 'oldest') {
+            $sql .= " ORDER BY j.created_at ASC";
+        } else {
+            $sql .= " ORDER BY j.created_at DESC";
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
