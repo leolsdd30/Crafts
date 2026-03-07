@@ -11,6 +11,8 @@ use App\Controllers\ProfileController;
 use App\Controllers\BookingController;
 use App\Controllers\ReviewController;
 use App\Controllers\FavoriteController;
+use App\Controllers\NotificationController;
+use App\Controllers\AdminController;
 use App\Controllers\MessageController;
 
 /**
@@ -72,3 +74,15 @@ $router->get('/messages/unread-count', [MessageController::class , 'unreadCount'
 $router->post('/messages/accept-request', [MessageController::class , 'acceptRequest']);
 $router->post('/messages/decline-request', [MessageController::class , 'declineRequest']);
 
+// Notification Routes
+$router->get('/notifications', [NotificationController::class , 'index']);
+$router->post('/notifications/mark-all-read', [NotificationController::class , 'markAllRead']);
+$router->get('/notifications/read', [NotificationController::class , 'markRead']);
+$router->get('/notifications/unread-count', [NotificationController::class , 'unreadCount']);
+
+// Admin Routes
+$router->get('/admin/dashboard', [AdminController::class , 'dashboard']);
+$router->get('/admin/users', [AdminController::class , 'users']);
+$router->post('/admin/users/toggle-status', [AdminController::class , 'toggleUserStatus']);
+$router->get('/admin/verifications', [AdminController::class , 'verifications']);
+$router->post('/admin/verifications/toggle', [AdminController::class , 'toggleVerification']);

@@ -6,6 +6,7 @@ use App\Auth\Middleware;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Message;
+use App\Models\Notification;
 
 class BookingController extends Controller
 {
@@ -85,6 +86,12 @@ class BookingController extends Controller
             $msgModel = new Message();
             $msgModel->autoPromoteOnBooking($_SESSION['user_id'], $craftsmanId);
 
+            // Notify the craftsman
+            $notif = new Notification();
+            $notif->send($craftsmanId, 'booking_new', 'New Booking Request', 
+                $_SESSION['name'] . ' has requested a booking with you.', 
+                APP_URL . '/craftsman/dashboard');
+
             $dashboard = $_SESSION['role'] === 'craftsman' ? '/craftsman/dashboard' : '/homeowner/dashboard';
             header("Location: " . APP_URL . $dashboard . "?success=booking_requested");
             exit;
@@ -130,6 +137,12 @@ class BookingController extends Controller
         $msgModel = new Message();
         $msgModel->autoPromoteOnBooking($booking['homeowner_id'], $booking['craftsman_id']);
 
+        // Notify homeowner
+        $notif = new Notification();
+        $notif->send($booking['homeowner_id'], 'booking_accepted', 'Booking Accepted!', 
+            'Your booking request has been accepted. The job is now active.', 
+            APP_URL . '/homeowner/dashboard');
+
         header("Location: " . APP_URL . "/craftsman/dashboard?success=booking_accepted");
         exit;
     }
@@ -158,6 +171,12 @@ class BookingController extends Controller
         }
 
         $bookingModel->updateStatus($bookingId, 'cancelled');
+
+        // Notify homeowner
+        $notif = new Notification();
+        $notif->send($booking['homeowner_id'], 'booking_declined', 'Booking Declined', 
+            'Unfortunately, your booking request was declined by the craftsman.', 
+            APP_URL . '/homeowner/dashboard');
 
         header("Location: " . APP_URL . "/craftsman/dashboard?success=booking_declined");
         exit;
@@ -188,6 +207,12 @@ class BookingController extends Controller
 
         if ($booking['status'] === 'hired') {
             $bookingModel->updateStatus($bookingId, 'completed');
+
+            // Notify homeowner
+            $notif = new Notification();
+            $notif->send($booking['homeowner_id'], 'booking_completed', 'Job Completed!', 
+                'Your job has been marked as completed. You can now leave a review!', 
+                APP_URL . '/reviews/create?booking_id=' . $bookingId);
         }
 
         header("Location: " . APP_URL . "/craftsman/dashboard?success=booking_completed");

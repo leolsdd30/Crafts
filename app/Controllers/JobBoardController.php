@@ -5,6 +5,7 @@ use App\Core\Controller;
 use App\Models\JobPosting;
 use App\Models\JobQuote;
 use App\Models\Message;
+use App\Models\Notification;
 use App\Auth\Middleware;
 
 class JobBoardController extends Controller
@@ -182,7 +183,13 @@ class JobBoardController extends Controller
         ]);
 
         if ($success) {
-            header("Location: " . APP_URL . "/jobs/show?id=" . $jobId . "&success=quote_submitted");
+        // Notify the job poster about the new quote
+        $notif = new Notification();
+        $notif->send($job['posted_by_user_id'], 'quote_new', 'New Quote Received', 
+            $_SESSION['name'] . ' submitted a quote of $' . number_format($price, 2) . ' on your job: ' . $job['title'], 
+            APP_URL . '/jobs/show?id=' . $jobId);
+
+        header("Location: " . APP_URL . "/jobs/show?id=" . $jobId . "&success=quote_submitted");
         }
         else {
             header("Location: " . APP_URL . "/jobs/show?id=" . $jobId . "&error=submit_failed");
@@ -225,11 +232,17 @@ class JobBoardController extends Controller
         $success = $quoteModel->acceptQuote($quoteId);
 
         if ($success) {
-            // Auto-promote any pending message requests between homeowner and craftsman
-            $msgModel = new Message();
-            $msgModel->autoPromoteOnBooking($_SESSION['user_id'], $quote['craftsman_id']);
+        // Auto-promote any pending message requests between homeowner and craftsman
+        $msgModel = new Message();
+        $msgModel->autoPromoteOnBooking($_SESSION['user_id'], $quote['craftsman_id']);
 
-            header("Location: " . APP_URL . "/jobs/show?id=" . $quote['job_posting_id'] . "&success=quote_accepted");
+        // Notify the craftsman their quote was accepted
+        $notif = new Notification();
+        $notif->send($quote['craftsman_id'], 'quote_accepted', 'Quote Accepted!', 
+            'Your quote on "' . $job['title'] . '" has been accepted!', 
+            APP_URL . '/craftsman/dashboard');
+
+        header("Location: " . APP_URL . "/jobs/show?id=" . $quote['job_posting_id'] . "&success=quote_accepted");
         }
         else {
             header("Location: " . APP_URL . "/jobs/show?id=" . $quote['job_posting_id'] . "&error=accept_failed");
@@ -271,7 +284,13 @@ class JobBoardController extends Controller
 
         $quoteModel->rejectQuote($quoteId);
 
-        header("Location: " . APP_URL . "/jobs/show?id=" . $quote['job_posting_id'] . "&success=quote_rejected");
+    // Notify the craftsman their quote was rejected
+    $notif = new Notification();
+    $notif->send($quote['craftsman_id'], 'quote_rejected', 'Quote Declined', 
+        'Your quote on "' . $job['title'] . '" was not accepted.', 
+        APP_URL . '/jobs');
+
+    header("Location: " . APP_URL . "/jobs/show?id=" . $quote['job_posting_id'] . "&success=quote_rejected");
         exit;
     }
 }

@@ -5,6 +5,7 @@ use App\Core\Controller;
 use App\Auth\Middleware;
 use App\Models\Review;
 use App\Models\User;
+use App\Models\Notification;
 
 class ReviewController extends Controller
 {
@@ -110,6 +111,12 @@ class ReviewController extends Controller
         ]);
 
         if ($success) {
+            // Notify the craftsman about the new review
+            $notif = new Notification();
+            $notif->send($booking['craftsman_id'], 'review_new', 'New Review Received', 
+                $_SESSION['name'] . ' left you a ' . $starRating . '-star review!', 
+                APP_URL . '/profile?id=' . $booking['craftsman_id']);
+
             header("Location: " . APP_URL . "/homeowner/dashboard?success=review_submitted");
         } else {
             header("Location: " . APP_URL . "/homeowner/dashboard?error=review_failed");

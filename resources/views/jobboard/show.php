@@ -180,7 +180,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-semibold text-gray-900"><?= htmlspecialchars($quote['first_name'] . ' ' . $quote['last_name']) ?></p>
-                                <p class="text-xs text-gray-500"><?= htmlspecialchars($quote['email']) ?> &middot; <?= date('M d, Y', strtotime($quote['created_at'])) ?></p>
+                                <p class="text-xs text-gray-500"><?= date('M d, Y', strtotime($quote['created_at'])) ?></p>
                             </div>
                             <div class="text-right">
                                 <p class="text-xl font-bold text-gray-900">$<?= number_format($quote['quoted_price'], 2) ?></p>

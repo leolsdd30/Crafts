@@ -14,7 +14,7 @@ class CraftsmanProfile extends Model
         $sql = "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.wilaya 
                 FROM craftsmen_profiles cp
                 JOIN users u ON cp.user_id = u.id
-                WHERE u.is_active = TRUE";
+                WHERE u.is_active = TRUE AND u.role = 'craftsman'";
 
         $params = [];
 
