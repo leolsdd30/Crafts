@@ -20,6 +20,7 @@
         <?php endif; ?>
 
         <form action="<?= APP_URL ?>/jobs/create" method="POST" class="bg-white shadow rounded-lg">
+            <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
             <div class="px-6 py-6 space-y-6">
 
                 <!-- Job Title -->

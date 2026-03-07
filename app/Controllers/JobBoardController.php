@@ -43,6 +43,7 @@ class JobBoardController extends Controller
     public function store()
     {
         Middleware::requireLogin();
+        Middleware::verifyCsrfToken();
 
         $title = $_POST['title'] ?? '';
         $category = $_POST['category'] ?? '';
@@ -131,6 +132,7 @@ class JobBoardController extends Controller
     public function submitQuote()
     {
         Middleware::requireRole('craftsman');
+        Middleware::verifyCsrfToken();
 
         $jobId = $_POST['job_posting_id'] ?? null;
         $price = $_POST['quoted_price'] ?? '';
@@ -184,8 +186,9 @@ class JobBoardController extends Controller
     public function acceptQuote()
     {
         Middleware::requireLogin();
+        Middleware::verifyCsrfToken();
 
-        $quoteId = $_GET['quote_id'] ?? null;
+        $quoteId = $_POST['quote_id'] ?? null;
 
         if (!$quoteId) {
             header("Location: " . APP_URL . "/jobs");
@@ -226,8 +229,9 @@ class JobBoardController extends Controller
     public function rejectQuote()
     {
         Middleware::requireLogin();
+        Middleware::verifyCsrfToken();
 
-        $quoteId = $_GET['quote_id'] ?? null;
+        $quoteId = $_POST['quote_id'] ?? null;
 
         if (!$quoteId) {
             header("Location: " . APP_URL . "/jobs");

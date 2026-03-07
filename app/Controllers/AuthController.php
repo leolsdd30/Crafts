@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\User;
+use App\Auth\Middleware;
 
 class AuthController extends Controller
 {
@@ -23,6 +24,8 @@ class AuthController extends Controller
      */
     public function processLogin()
     {
+        Middleware::verifyCsrfToken();
+
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
@@ -66,6 +69,8 @@ class AuthController extends Controller
      */
     public function processRegister()
     {
+        Middleware::verifyCsrfToken();
+
         $firstName = $_POST['first_name'] ?? '';
         $lastName = $_POST['last_name'] ?? '';
         $email = $_POST['email'] ?? '';

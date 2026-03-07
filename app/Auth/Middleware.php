@@ -44,12 +44,15 @@ class Middleware
     }
 
     /**
-     * Verify a CSRF token
+     * Verify a CSRF token from the POST request
      */
-    public static function verifyCsrfToken($token)
+    public static function verifyCsrfToken()
     {
-        if (empty($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
-            die("CSRF Token Validation Failed");
+        $token = $_POST['csrf_token'] ?? '';
+
+        if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            // Alternatively, redirect to an error page or back with an error flash.
+            die("Access Denied: CSRF Token Validation Failed. Please go back and try again.");
         }
         return true;
     }

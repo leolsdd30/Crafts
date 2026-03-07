@@ -19,6 +19,7 @@
         <?php endif; ?>
 
         <form class="mt-8 space-y-6" action="<?= APP_URL ?>/login" method="POST">
+            <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
             <div class="rounded-md shadow-sm space-y-4">
                 <div>
                     <label for="email-address" class="block text-sm font-medium text-gray-700">Email address</label>

@@ -22,6 +22,21 @@ class User extends Model
     }
 
     /**
+     * Find a user by their ID
+     * 
+     * @param int $id
+     * @return array|false 
+     */
+    public function findById(int $id)
+    {
+        $stmt = $this->query("SELECT * FROM users WHERE id = :id LIMIT 1", [
+            'id' => $id
+        ]);
+
+        return $stmt->fetch();
+    }
+
+    /**
      * Create a new user record in the database
      * 
      * @param array $data Contains first_name, last_name, email, password, role
@@ -54,5 +69,17 @@ class User extends Model
     public function verifyPassword(string $password, string $hash): bool
     {
         return password_verify($password, $hash);
+    }
+
+    /**
+     * Public wrapper allowing controllers to execute ad-hoc updates on users table
+     * 
+     * @param string $sql
+     * @param array $params
+     * @return bool
+     */
+    public function executeQuery(string $sql, array $params = []): bool
+    {
+        return $this->execute($sql, $params);
     }
 }

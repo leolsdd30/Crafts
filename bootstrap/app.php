@@ -51,3 +51,36 @@ loadEnv(BASE_PATH . '/.env');
 
 // Start the session globally here so all controllers have access to $_SESSION
 session_start();
+
+// Generate a CSRF token if one does not exist for the current session
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+// Global helper function to escape output and prevent Cross-Site Scripting (XSS)
+if (!function_exists('e')) {
+    function e($string)
+    {
+        return htmlspecialchars((string)$string, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+// Global helper function to generate or display profile picture
+if (!function_exists('get_profile_picture_url')) {
+    function get_profile_picture_url($profilePicture, $firstName, $lastName)
+    {
+        if (empty($profilePicture) || $profilePicture === 'default.png') {
+            $name = urlencode(trim($firstName . ' ' . $lastName));
+            // Use a persistent background color based on name length to avoid random changing per request
+            $colors = ['F87171', 'FBBF24', '34D399', '60A5FA', '818CF8', 'A78BFA', 'F472B6', '14B8A6'];
+            $bg = $colors[strlen($name) % count($colors)];
+            return "https://ui-avatars.com/api/?name={$name}&background={$bg}&color=fff&size=256";
+        }
+
+        if (filter_var($profilePicture, FILTER_VALIDATE_URL)) {
+            return $profilePicture;
+        }
+
+        return APP_URL . '/uploads/profile/' . htmlspecialchars($profilePicture);
+    }
+}

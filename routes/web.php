@@ -6,6 +6,7 @@ use App\Controllers\HomeownerController;
 use App\Controllers\CraftsmanController;
 use App\Controllers\JobBoardController;
 use App\Controllers\SearchController;
+use App\Controllers\ProfileController;
 
 /**
  * Register all web routes here.
@@ -15,9 +16,13 @@ use App\Controllers\SearchController;
 $router->get('/', [HomeController::class , 'index']);
 $router->get('/about', [HomeController::class , 'about']);
 
-// Public Search Routes
+// Public Search & Profile Routes
 $router->get('/search', [SearchController::class , 'index']);
-$router->get('/search/profile', [SearchController::class , 'show']);
+$router->get('/profile', [ProfileController::class , 'show']);
+
+// Profile Management Routes
+$router->get('/profile/edit', [ProfileController::class , 'edit']);
+$router->post('/profile/edit', [ProfileController::class , 'update']);
 
 // Authentication Routes
 $router->get('/login', [AuthController::class , 'showLoginForm']);
@@ -36,5 +41,5 @@ $router->get('/jobs/create', [JobBoardController::class , 'create']);
 $router->post('/jobs/create', [JobBoardController::class , 'store']);
 $router->get('/jobs/show', [JobBoardController::class , 'show']);
 $router->post('/jobs/quote', [JobBoardController::class , 'submitQuote']);
-$router->get('/jobs/accept-quote', [JobBoardController::class , 'acceptQuote']);
-$router->get('/jobs/reject-quote', [JobBoardController::class , 'rejectQuote']);
+$router->post('/jobs/accept-quote', [JobBoardController::class , 'acceptQuote']);
+$router->post('/jobs/reject-quote', [JobBoardController::class , 'rejectQuote']);

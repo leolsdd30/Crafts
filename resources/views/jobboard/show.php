@@ -135,6 +135,7 @@
                     <p class="text-sm text-indigo-700">Tell the homeowner why you're the right person for this job.</p>
                 </div>
                 <form action="<?= APP_URL ?>/jobs/quote" method="POST" class="px-6 py-5 space-y-4">
+                    <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
                     <input type="hidden" name="job_posting_id" value="<?= $job['id'] ?>">
 
                     <div>
@@ -251,9 +252,13 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <a href="#" id="confirmAcceptLink" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
-                    Confirm & Proceed
-                </a>
+                <form id="acceptForm" method="POST" action="" class="w-full sm:w-auto sm:ml-3">
+                    <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                    <input type="hidden" name="quote_id" id="acceptQuoteId" value="">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto sm:text-sm">
+                        Confirm & Proceed
+                    </button>
+                </form>
                 <button type="button" onclick="closeAcceptModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Cancel
                 </button>
@@ -285,9 +290,13 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <a href="#" id="confirmRejectLink" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
-                    Decline Quote
-                </a>
+                <form id="rejectForm" method="POST" action="" class="w-full sm:w-auto sm:ml-3">
+                    <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                    <input type="hidden" name="quote_id" id="rejectQuoteId" value="">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm">
+                        Decline Quote
+                    </button>
+                </form>
                 <button type="button" onclick="closeRejectModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Cancel
                 </button>
@@ -300,7 +309,8 @@
 function openAcceptModal(quoteId, name, price) {
     document.getElementById('craftsmanNameAccept').innerText = name;
     document.getElementById('quotePriceAccept').innerText = price;
-    document.getElementById('confirmAcceptLink').href = '<?= APP_URL ?>/jobs/accept-quote?quote_id=' + quoteId;
+    document.getElementById('acceptForm').action = '<?= APP_URL ?>/jobs/accept-quote';
+    document.getElementById('acceptQuoteId').value = quoteId;
     document.getElementById('acceptModal').classList.remove('hidden');
 }
 
@@ -310,7 +320,8 @@ function closeAcceptModal() {
 
 function openRejectModal(quoteId, name) {
     document.getElementById('craftsmanNameReject').innerText = name;
-    document.getElementById('confirmRejectLink').href = '<?= APP_URL ?>/jobs/reject-quote?quote_id=' + quoteId;
+    document.getElementById('rejectForm').action = '<?= APP_URL ?>/jobs/reject-quote';
+    document.getElementById('rejectQuoteId').value = quoteId;
     document.getElementById('rejectModal').classList.remove('hidden');
 }
 
@@ -318,3 +329,4 @@ function closeRejectModal() {
     document.getElementById('rejectModal').classList.add('hidden');
 }
 </script>
+            
