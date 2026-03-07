@@ -71,6 +71,27 @@ class JobQuote extends Model
     }
 
     /**
+     * Get all quotes received on all jobs posted by a specific homeowner.
+     * Used for the homeowner dashboard "Incoming Quotes" tab.
+     */
+    public function getQuotesForHomeowner($homeownerId)
+    {
+        $stmt = $this->db->prepare(
+            "SELECT q.id AS quote_id, q.job_posting_id, q.craftsman_id, q.quoted_price, 
+                    q.cover_message, q.status AS quote_status, q.created_at AS quote_created_at,
+                    j.title AS job_title, j.service_category,
+                    u.first_name AS craftsman_first_name, u.last_name AS craftsman_last_name, u.profile_picture AS craftsman_picture
+             FROM job_quotes q
+             JOIN job_postings j ON q.job_posting_id = j.id
+             JOIN users u ON q.craftsman_id = u.id
+             WHERE j.posted_by_user_id = :homeowner_id
+             ORDER BY q.created_at DESC"
+        );
+        $stmt->execute(['homeowner_id' => $homeownerId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Find a single quote by its ID.
      */
     public function findById($id)

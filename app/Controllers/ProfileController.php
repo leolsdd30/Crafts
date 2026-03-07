@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\User;
 use App\Models\CraftsmanProfile;
+use App\Models\Review;
 use App\Auth\Middleware;
 
 class ProfileController extends Controller
@@ -47,11 +48,22 @@ class ProfileController extends Controller
             }
         }
 
+        $reviews = [];
+        $rating = ['avg_rating' => 0, 'total_reviews' => 0];
+
+        if ($user['role'] === 'craftsman') {
+            $reviewModel = new Review();
+            $reviews = $reviewModel->getReviewsForCraftsman($id);
+            $rating = $reviewModel->getCraftsmanRating($id);
+        }
+
         $this->view('layouts/app', [
             'pageTitle' => $user['first_name'] . ' ' . $user['last_name'] . ' - Profile',
             'contentView' => 'profile/show',
             'user' => $user,
-            'craftsmanDetails' => $craftsmanDetails
+            'craftsmanDetails' => $craftsmanDetails,
+            'reviews' => $reviews,
+            'rating' => $rating
         ]);
     }
 

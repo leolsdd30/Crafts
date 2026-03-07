@@ -8,6 +8,9 @@ use App\Controllers\JobBoardController;
 use App\Controllers\SearchController;
 use App\Controllers\ProfileController;
 
+use App\Controllers\BookingController;
+use App\Controllers\ReviewController;
+
 /**
  * Register all web routes here.
  * The $router object is provided by public/index.php
@@ -43,3 +46,14 @@ $router->get('/jobs/show', [JobBoardController::class , 'show']);
 $router->post('/jobs/quote', [JobBoardController::class , 'submitQuote']);
 $router->post('/jobs/accept-quote', [JobBoardController::class , 'acceptQuote']);
 $router->post('/jobs/reject-quote', [JobBoardController::class , 'rejectQuote']);
+
+// Booking Routes
+$router->get('/bookings/create', [BookingController::class , 'create']);
+$router->post('/bookings/create', [BookingController::class , 'store']);
+$router->post('/bookings/accept', [BookingController::class , 'accept']);
+$router->post('/bookings/decline', [BookingController::class , 'decline']);
+
+// Review Routes
+$router->get('/reviews/create', [ReviewController::class , 'create']);
+$router->post('/reviews/create', [ReviewController::class , 'store']);
+

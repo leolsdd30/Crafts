@@ -47,6 +47,18 @@
                             <span class="block text-sm font-medium text-indigo-800">Hourly Rate</span>
                             <span class="block text-3xl font-bold text-indigo-600">$<?= number_format($craftsmanDetails['hourly_rate'] ?? 0, 2) ?></span>
                         </div>
+                        <div class="bg-yellow-50 rounded-lg p-4 text-center border border-yellow-100 border-dashed">
+                            <span class="block text-sm font-medium text-yellow-800">Rating</span>
+                            <div class="flex items-center justify-center mt-1">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <svg class="h-5 w-5 <?= $i <= round($rating['avg_rating']) ? 'text-yellow-400' : 'text-gray-300' ?>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                <?php endfor; ?>
+                            </div>
+                            <span class="block text-sm font-bold text-yellow-700 mt-1"><?= $rating['avg_rating'] ?> / 5</span>
+                            <span class="block text-xs text-yellow-600"><?= $rating['total_reviews'] ?> review<?= $rating['total_reviews'] !== 1 ? 's' : '' ?></span>
+                        </div>
                     </div>
                     <?php endif; ?>
                     <div class="mt-auto space-y-3 pt-6 border-t border-gray-100">
@@ -54,9 +66,9 @@
                             <a href="mailto:<?= htmlspecialchars($user['email']) ?>" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
                                 Send Message
                             </a>
-                            <button onclick="alert('Direct booking system coming in Step 7!')" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                            <a href="<?= APP_URL ?>/bookings/create?craftsman_id=<?= $user['id'] ?>" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
                                 Request Booking
-                            </button>
+                            </a>
                         <?php else: ?>
                             <a href="<?= APP_URL ?>/profile/edit" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-indigo-200 shadow-sm text-sm font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
                                 <svg class="mr-2 h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -247,6 +259,65 @@
             </div>
         </div>
     </div>
+
+    <!-- Reviews Section (Craftsman only) -->
+    <?php if ($user['role'] === 'craftsman'): ?>
+    <div class="max-w-4xl mx-auto mt-10 px-4">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Reviews</h2>
+                <p class="text-sm text-gray-500"><?= $rating['total_reviews'] ?> review<?= $rating['total_reviews'] !== 1 ? 's' : '' ?> · <?= $rating['avg_rating'] ?> average</p>
+            </div>
+            <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] != $user['id'] && ($_SESSION['role'] ?? '') === 'homeowner'): ?>
+            <a href="<?= APP_URL ?>/reviews/create?craftsman_id=<?= $user['id'] ?>" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-yellow-500 hover:bg-yellow-600 transition duration-150">
+                <svg class="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                Write a Review
+            </a>
+            <?php endif; ?>
+        </div>
+
+        <?php if (!empty($reviews)): ?>
+        <div class="space-y-4">
+            <?php foreach ($reviews as $review): ?>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+                <div class="flex items-start space-x-4">
+                    <img class="h-10 w-10 rounded-full object-cover" 
+                         src="<?= get_profile_picture_url($review['profile_picture'] ?? 'default.png', $review['first_name'], $review['last_name']) ?>" 
+                         alt="<?= htmlspecialchars($review['first_name']) ?>">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm font-bold text-gray-900"><?= htmlspecialchars($review['first_name'] . ' ' . $review['last_name']) ?></p>
+                            <p class="text-xs text-gray-400"><?= date('M d, Y', strtotime($review['created_at'])) ?></p>
+                        </div>
+                        <div class="flex items-center mt-1">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <svg class="h-4 w-4 <?= $i <= $review['star_rating'] ? 'text-yellow-400' : 'text-gray-300' ?>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <?php endfor; ?>
+                        </div>
+                        <?php if (!empty($review['comment'])): ?>
+                        <p class="mt-2 text-sm text-gray-600"><?= nl2br(htmlspecialchars($review['comment'])) ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php else: ?>
+        <div class="bg-white rounded-lg border-2 border-dashed border-gray-200 p-10 text-center">
+            <svg class="mx-auto h-10 w-10 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+            <h3 class="mt-3 text-sm font-medium text-gray-900">No reviews yet</h3>
+            <p class="mt-1 text-sm text-gray-500">Be the first to review this craftsman!</p>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
 </div>
 
 <script>
