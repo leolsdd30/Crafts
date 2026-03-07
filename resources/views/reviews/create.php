@@ -3,7 +3,7 @@
     <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div class="mb-8">
-            <a href="<?= APP_URL ?>/profile?id=<?= $craftsman['id'] ?>" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">&larr; Back to Profile</a>
+            <a href="<?= APP_URL ?>/homeowner/dashboard" class="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">&larr; Back to Dashboard</a>
             <h1 class="mt-2 text-3xl font-extrabold text-gray-900">Write a Review</h1>
             <p class="mt-1 text-sm text-gray-500">Share your experience with this craftsman to help other homeowners.</p>
         </div>
@@ -34,7 +34,7 @@
 
         <form action="<?= APP_URL ?>/reviews/create" method="POST" class="bg-white shadow rounded-lg">
             <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
-            <input type="hidden" name="craftsman_id" value="<?= $craftsman['id'] ?>">
+            <input type="hidden" name="booking_id" value="<?= $bookingId ?>">
             <input type="hidden" name="star_rating" id="star_rating_input" value="0">
 
             <div class="px-6 py-6 space-y-6">
@@ -67,7 +67,7 @@
 
             <!-- Form Actions -->
             <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex items-center justify-end space-x-3">
-                <a href="<?= APP_URL ?>/profile?id=<?= $craftsman['id'] ?>" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-500 transition-colors duration-200">Cancel</a>
+                <a href="<?= APP_URL ?>/homeowner/dashboard" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-500 transition-colors duration-200">Cancel</a>
                 <button type="submit" id="submit-btn" disabled
                     class="inline-flex justify-center items-center px-6 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-400 cursor-not-allowed transition duration-150">
                     <svg class="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">

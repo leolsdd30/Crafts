@@ -9,38 +9,47 @@ use App\Models\User;
 class ReviewController extends Controller
 {
     /**
-     * Show the review form for a craftsman.
+     * Show the review form for a completed booking.
      */
     public function create()
     {
         Middleware::requireLogin();
+        
+        // We only allow homeowners to write reviews now
+        Middleware::requireRole('homeowner');
 
-        $craftsmanId = $_GET['craftsman_id'] ?? null;
+        $bookingId = $_GET['booking_id'] ?? null;
 
-        if (!$craftsmanId || $craftsmanId == $_SESSION['user_id']) {
-            header("Location: " . APP_URL . "/search");
+        if (!$bookingId) {
+            header("Location: " . APP_URL . "/homeowner/dashboard");
             exit;
         }
 
-        $userModel = new User();
-        $craftsman = $userModel->findById($craftsmanId);
+        $bookingModel = new \App\Models\Booking();
+        $booking = $bookingModel->findById($bookingId);
 
-        if (!$craftsman || $craftsman['role'] !== 'craftsman') {
-            echo "Craftsman not found.";
+        // Can only review completed bookings belonging to this homeowner
+        if (!$booking || $booking['homeowner_id'] != $_SESSION['user_id'] || $booking['status'] !== 'completed') {
+            header("Location: " . APP_URL . "/homeowner/dashboard");
             exit;
         }
 
-        // Check if already reviewed
+        // Check if already reviewed for this specific booking
         $reviewModel = new Review();
-        if ($reviewModel->hasReviewed($_SESSION['user_id'], $craftsmanId)) {
-            header("Location: " . APP_URL . "/profile?id=" . $craftsmanId . "&info=already_reviewed");
+        if ($reviewModel->hasReviewed($_SESSION['user_id'], $booking['craftsman_id'], $bookingId)) {
+            header("Location: " . APP_URL . "/homeowner/dashboard?info=already_reviewed");
             exit;
         }
+
+        // Load craftsman user info for the UI
+        $userModel = new User();
+        $craftsman = $userModel->findById($booking['craftsman_id']);
 
         $this->view('layouts/app', [
             'pageTitle' => 'Write a Review - CraftConnect',
             'contentView' => 'reviews/create',
-            'craftsman' => $craftsman
+            'craftsman' => $craftsman,
+            'bookingId' => $bookingId
         ]);
     }
 
@@ -50,20 +59,35 @@ class ReviewController extends Controller
     public function store()
     {
         Middleware::requireLogin();
+        Middleware::requireRole('homeowner');
         Middleware::verifyCsrfToken();
 
-        $craftsmanId = $_POST['craftsman_id'] ?? null;
+        $bookingId = $_POST['booking_id'] ?? null;
         $starRating = (int) ($_POST['star_rating'] ?? 0);
         $comment = trim($_POST['comment'] ?? '');
 
-        if (empty($craftsmanId) || $starRating < 1 || $starRating > 5) {
+        if (!$bookingId) {
+            header("Location: " . APP_URL . "/homeowner/dashboard");
+            exit;
+        }
+
+        $bookingModel = new \App\Models\Booking();
+        $booking = $bookingModel->findById($bookingId);
+
+        if (!$booking || $booking['homeowner_id'] != $_SESSION['user_id'] || $booking['status'] !== 'completed') {
+            header("Location: " . APP_URL . "/homeowner/dashboard");
+            exit;
+        }
+
+        if ($starRating < 1 || $starRating > 5) {
             $userModel = new User();
-            $craftsman = $userModel->findById($craftsmanId);
+            $craftsman = $userModel->findById($booking['craftsman_id']);
 
             $this->view('layouts/app', [
                 'pageTitle' => 'Write a Review - CraftConnect',
                 'contentView' => 'reviews/create',
                 'craftsman' => $craftsman,
+                'bookingId' => $bookingId,
                 'error' => 'Please select a star rating (1-5).'
             ]);
             return;
@@ -71,23 +95,24 @@ class ReviewController extends Controller
 
         $reviewModel = new Review();
 
-        // Prevent duplicate reviews
-        if ($reviewModel->hasReviewed($_SESSION['user_id'], $craftsmanId)) {
-            header("Location: " . APP_URL . "/profile?id=" . $craftsmanId . "&info=already_reviewed");
+        // Prevent duplicate reviews for this specific booking
+        if ($reviewModel->hasReviewed($_SESSION['user_id'], $booking['craftsman_id'], $bookingId)) {
+            header("Location: " . APP_URL . "/homeowner/dashboard?info=already_reviewed");
             exit;
         }
 
         $success = $reviewModel->create([
+            'booking_id' => $bookingId,
             'homeowner_id' => $_SESSION['user_id'],
-            'craftsman_id' => $craftsmanId,
+            'craftsman_id' => $booking['craftsman_id'],
             'star_rating' => $starRating,
             'comment' => $comment
         ]);
 
         if ($success) {
-            header("Location: " . APP_URL . "/profile?id=" . $craftsmanId . "&success=review_submitted");
+            header("Location: " . APP_URL . "/homeowner/dashboard?success=review_submitted");
         } else {
-            header("Location: " . APP_URL . "/profile?id=" . $craftsmanId . "&error=review_failed");
+            header("Location: " . APP_URL . "/homeowner/dashboard?error=review_failed");
         }
         exit;
     }

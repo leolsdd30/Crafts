@@ -222,6 +222,19 @@
                                 </form>
                                 <a href="<?= APP_URL ?>/profile?id=<?= $booking['homeowner_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Homeowner</a>
                             </div>
+                            <?php elseif ($booking['status'] === 'hired'): ?>
+                            <div class="mt-3 pt-3 border-t border-gray-100 flex items-center space-x-2">
+                                <form id="complete-booking-<?= $booking['id'] ?>" action="<?= APP_URL ?>/bookings/complete" method="POST" class="inline">
+                                    <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                                    <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                                    <button type="button" onclick="showConfirmModal('complete-booking-<?= $booking['id'] ?>', 'Mark as Completed?', 'This will finalize the booking. The homeowner will be prompted to leave a review.', 'accept')" class="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition duration-150">Mark as Completed</button>
+                                </form>
+                                <a href="<?= APP_URL ?>/profile?id=<?= $booking['homeowner_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Homeowner</a>
+                            </div>
+                            <?php else: ?>
+                            <div class="mt-3 pt-3 border-t border-gray-100 flex items-center space-x-2">
+                                <a href="<?= APP_URL ?>/profile?id=<?= $booking['homeowner_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Homeowner</a>
+                            </div>
                             <?php endif; ?>
                         </div>
                         <?php endforeach; ?>

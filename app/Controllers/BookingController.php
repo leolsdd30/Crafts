@@ -153,4 +153,35 @@ class BookingController extends Controller
         header("Location: " . APP_URL . "/craftsman/dashboard?success=booking_declined");
         exit;
     }
+
+    /**
+     * Craftsman marks a booking as completed.
+     */
+    public function complete()
+    {
+        Middleware::requireLogin();
+        Middleware::verifyCsrfToken();
+
+        $bookingId = $_POST['booking_id'] ?? null;
+
+        if (!$bookingId) {
+            header("Location: " . APP_URL . "/craftsman/dashboard");
+            exit;
+        }
+
+        $bookingModel = new Booking();
+        $booking = $bookingModel->findById($bookingId);
+
+        if (!$booking || $booking['craftsman_id'] != $_SESSION['user_id']) {
+            echo "Access Denied.";
+            exit;
+        }
+
+        if ($booking['status'] === 'hired') {
+            $bookingModel->updateStatus($bookingId, 'completed');
+        }
+
+        header("Location: " . APP_URL . "/craftsman/dashboard?success=booking_completed");
+        exit;
+    }
 }

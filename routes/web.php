@@ -52,6 +52,7 @@ $router->get('/bookings/create', [BookingController::class , 'create']);
 $router->post('/bookings/create', [BookingController::class , 'store']);
 $router->post('/bookings/accept', [BookingController::class , 'accept']);
 $router->post('/bookings/decline', [BookingController::class , 'decline']);
+$router->post('/bookings/complete', [BookingController::class , 'complete']);
 
 // Review Routes
 $router->get('/reviews/create', [ReviewController::class , 'create']);

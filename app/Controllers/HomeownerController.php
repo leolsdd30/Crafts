@@ -45,7 +45,16 @@ class HomeownerController extends Controller
         // Load bookings sent by this homeowner
         $bookingModel = new Booking();
         $myBookings = $bookingModel->getBookingsForHomeowner($_SESSION['user_id']);
-
+        
+        // Attach review check
+        $reviewModel = new \App\Models\Review();
+        foreach ($myBookings as &$b) {
+            if ($b['status'] === 'completed') {
+                $b['has_reviewed'] = $reviewModel->hasReviewed($_SESSION['user_id'], $b['craftsman_id'], $b['id']);
+            } else {
+                $b['has_reviewed'] = false;
+            }
+        }
         $this->view('layouts/app', [
             'pageTitle' => 'Homeowner Dashboard - CraftConnect',
             'contentView' => 'homeowner/dashboard',
