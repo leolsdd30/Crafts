@@ -13,9 +13,22 @@
                 
                 <!-- Left Column (Sticky Sidebar) -->
                 <div class="md:col-span-1 border-r border-gray-100 bg-white p-6 md:p-8 flex flex-col pt-0 sm:rounded-l-xl">
-                    <div class="relative w-32 h-32 mx-auto md:mx-0 mb-6 rounded-full ring-4 ring-white shadow-lg bg-white -mt-16 overflow-hidden">
-                        <img src="<?= get_profile_picture_url($user['profile_picture'] ?? 'default.png', $user['first_name'], $user['last_name']) ?>" 
-                             alt="<?= htmlspecialchars($user['first_name']) ?>'s profile picture" class="object-cover w-full h-full">
+                    <div class="relative w-full flex justify-center md:justify-start">
+                        <div class="relative w-32 h-32 mb-6 rounded-full ring-4 ring-white shadow-lg bg-white -mt-16 overflow-hidden">
+                            <img src="<?= get_profile_picture_url($user['profile_picture'] ?? 'default.png', $user['first_name'], $user['last_name']) ?>" 
+                                 alt="<?= htmlspecialchars($user['first_name']) ?>'s profile picture" class="object-cover w-full h-full">
+                        </div>
+                        
+                        <!-- Favorite Heart -->
+                        <?php if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'homeowner' && $user['role'] === 'craftsman'): ?>
+                        <div class="absolute right-0 top-0 pt-2 pr-2">
+                            <button type="button" onclick="toggleFavorite(<?= $user['id'] ?>, this)" class="p-2.5 rounded-full z-10 bg-white shadow-sm border <?= $isFavorite ? 'border-pink-200 text-pink-500 hover:bg-pink-50' : 'border-gray-200 text-gray-300 hover:text-pink-400 hover:border-pink-200' ?> transition-colors duration-200 outline-none focus:outline-none" title="<?= $isFavorite ? 'Remove from favorites' : 'Save to favorites' ?>">
+                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" <?= $isFavorite ? 'viewBox="0 0 20 20" fill="currentColor"' : 'fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"' ?>>
+                                    <path <?= $isFavorite ? 'fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"' : 'stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"' ?> />
+                                </svg>
+                            </button>
+                        </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="text-center md:text-left mb-6">
@@ -260,6 +273,8 @@
             </div>
         </div>
     </div>
+</div>
+<?php endif; ?>
 
     <!-- Reviews Section (Craftsman only) -->
     <?php if ($user['role'] === 'craftsman'): ?>
@@ -329,5 +344,54 @@ function confirmLaunch() {
     alert('Congratulations! Your profile card is now live and actively ranking in the marketplace. (This is a Phase 7 integration demo)');
     closeLaunchModal();
 }
+
+async function toggleFavorite(craftsmanId, btnElement) {
+    const icon = btnElement.querySelector('svg');
+    const isCurrentlyFavorite = btnElement.classList.contains('text-pink-500');
+    
+    // Optimistic UI update
+    if (isCurrentlyFavorite) {
+        btnElement.classList.remove('border-pink-200', 'text-pink-500', 'hover:bg-pink-50');
+        btnElement.classList.add('border-gray-200', 'text-gray-300', 'hover:text-pink-400', 'hover:border-pink-200');
+        btnElement.title = 'Save to favorites';
+        icon.removeAttribute('fill');
+        icon.setAttribute('fill', 'none');
+        icon.setAttribute('stroke', 'currentColor');
+        icon.setAttribute('stroke-width', '2');
+        icon.setAttribute('viewBox', '0 0 24 24');
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />';
+    } else {
+        btnElement.classList.remove('border-gray-200', 'text-gray-300', 'hover:text-pink-400', 'hover:border-pink-200');
+        btnElement.classList.add('border-pink-200', 'text-pink-500', 'hover:bg-pink-50');
+        btnElement.title = 'Remove from favorites';
+        icon.removeAttribute('stroke');
+        icon.removeAttribute('stroke-width');
+        icon.setAttribute('fill', 'currentColor');
+        icon.setAttribute('viewBox', '0 0 20 20');
+        icon.innerHTML = '<path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />';
+    }
+
+    try {
+        const response = await fetch('<?= APP_URL ?>/favorites/toggle', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ craftsman_id: craftsmanId })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            // Revert on failure
+            alert(data.message || 'Failed to update favorites.');
+            window.location.reload();
+        }
+    } catch (e) {
+        console.error('Error toggling favorite:', e);
+        // Revert on failure
+        window.location.reload();
+    }
+}
 </script>
-<?php endif; ?>

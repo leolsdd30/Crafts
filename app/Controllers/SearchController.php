@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\CraftsmanProfile;
+use App\Models\Favorite;
 
 class SearchController extends Controller
 {
@@ -21,6 +22,21 @@ class SearchController extends Controller
         ];
 
         $craftsmen = $craftsmanModel->getAllCraftsmen($filters);
+
+        // Map favorites if user is logged in as homeowner
+        if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'homeowner') {
+            $favoriteModel = new Favorite();
+            $myFavorites = $favoriteModel->getFavoritesForHomeowner($_SESSION['user_id']);
+            $favoriteIds = array_column($myFavorites, 'id'); // user.id of favorite craftsmen
+            
+            foreach ($craftsmen as &$craftsman) {
+                $craftsman['is_favorite'] = in_array($craftsman['user_id'], $favoriteIds);
+            }
+        } else {
+            foreach ($craftsmen as &$craftsman) {
+                $craftsman['is_favorite'] = false;
+            }
+        }
 
         $this->view('layouts/app', [
             'pageTitle' => 'Find Skilled Professionals - CraftConnect',

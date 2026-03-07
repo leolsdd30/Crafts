@@ -74,8 +74,8 @@
                         </svg>
                     </div>
                     <div class="ml-4">
-                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Favorites</p>
-                        <p class="text-2xl font-bold text-gray-900">0</p>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Saved Craftsmen</p>
+                        <p class="text-2xl font-bold text-gray-900"><?= count($favorites) ?></p>
                     </div>
                 </div>
             </div>
@@ -106,7 +106,10 @@
                         </button>
                         <button onclick="switchTab('favorites')" data-tab="favorites"
                             class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
-                            Favorites
+                            Saved Craftsmen
+                            <?php if (!empty($favorites)): ?>
+                            <span class="ml-1.5 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold bg-pink-100 text-pink-700"><?= count($favorites) ?></span>
+                            <?php endif; ?>
                         </button>
                     </nav>
                 </div>
@@ -286,13 +289,72 @@
 
                 <!-- Tab: Favorites -->
                 <div id="tab-favorites" class="tab-content hidden">
+                    <?php if (!empty($favorites)): ?>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <?php foreach ($favorites as $favorite): ?>
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md hover:border-pink-200 transition-all duration-200 p-5 flex flex-col justify-between relative overflow-hidden group">
+                            <!-- Absolute heart icon fading in background -->
+                            <svg class="absolute -right-4 -bottom-4 h-24 w-24 text-pink-50 opacity-10 group-hover:scale-110 transition-transform duration-300 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                            </svg>
+
+                            <div class="flex items-start space-x-4 relative z-10">
+                                <img src="<?= get_profile_picture_url($favorite['profile_picture'] ?? 'default.png', $favorite['first_name'], $favorite['last_name']) ?>" 
+                                     alt="<?= htmlspecialchars($favorite['first_name']) ?>" 
+                                     class="h-12 w-12 rounded-full object-cover shadow-sm border border-gray-100">
+                                <div>
+                                    <h3 class="text-base font-bold text-gray-900"><?= htmlspecialchars($favorite['first_name'] . ' ' . $favorite['last_name']) ?></h3>
+                                    <p class="text-sm font-medium text-indigo-600"><?= htmlspecialchars($favorite['service_category'] ?? 'Professional') ?></p>
+                                    
+                                    <div class="mt-1 flex items-center text-xs text-gray-500 space-x-3">
+                                        <?php if (!empty($favorite['wilaya'])): ?>
+                                        <span class="flex items-center">
+                                            <svg class="h-3 w-3 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <?= htmlspecialchars($favorite['wilaya']) ?>
+                                        </span>
+                                        <?php endif; ?>
+                                        <span class="flex items-center">
+                                            <svg class="h-3 w-3 mr-1 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            <?= $favorite['rating_score'] > 0 ? htmlspecialchars($favorite['rating_score']) . ' (' . intval($favorite['reviews_count']) . ')' : 'No ratings' ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between relative z-10">
+                                <span class="text-sm font-bold text-gray-900">
+                                    DZD <?= number_format($favorite['hourly_rate'] ?? 0, 2) ?><span class="text-xs text-gray-500 font-normal">/hr</span>
+                                </span>
+                                <div class="flex space-x-2">
+                                    <button type="button" onclick="confirmRemoveFavorite(<?= $favorite['id'] ?>)" class="p-1.5 text-pink-500 hover:text-pink-700 bg-pink-50 hover:bg-pink-100 rounded transition duration-150" title="Remove from saved">
+                                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <a href="<?= APP_URL ?>/profile?id=<?= $favorite['id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition duration-150">
+                                        View Profile
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php else: ?>
                     <div class="bg-white rounded-lg border-2 border-dashed border-gray-200 p-12 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="mx-auto h-12 w-12 text-pink-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
-                        <h3 class="mt-3 text-sm font-medium text-gray-900">No favorites yet</h3>
+                        <h3 class="mt-3 text-sm font-medium text-gray-900">No saved craftsmen</h3>
                         <p class="mt-1 text-sm text-gray-500">Save your favorite craftsmen here for quick access later.</p>
+                        <a href="<?= APP_URL ?>/search" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-pink-700 bg-pink-100 hover:bg-pink-200 transition duration-150">
+                            Find Craftsmen to Save
+                        </a>
                     </div>
+                    <?php endif; ?>
                 </div>
 
             </div>
@@ -423,7 +485,60 @@ function hideConfirmModal() {
 function confirmAction() {
     if (pendingFormId) {
         document.getElementById(pendingFormId).submit();
+    } else if (pendingFavoriteId) {
+        removeFavorite(pendingFavoriteId);
+        hideConfirmModal();
     }
 }
-</script>
 
+    function acceptQuote() {
+        if (currentQuoteFormId) {
+            document.getElementById(currentQuoteFormId).submit();
+        }
+    }
+
+    var pendingFavoriteId = null;
+
+    function confirmRemoveFavorite(id) {
+        pendingFavoriteId = id;
+        pendingFormId = null;
+        
+        document.getElementById('modal-title').innerText = 'Remove from Favorites';
+        document.getElementById('modal-message').innerText = 'Are you sure you want to remove this craftsman from your saved list?';
+        
+        document.getElementById('modal-icon-accept').classList.add('hidden');
+        document.getElementById('modal-icon-decline').classList.remove('hidden');
+        
+        const confirmBtn = document.getElementById('modal-confirm-btn');
+        confirmBtn.innerText = 'Remove';
+        confirmBtn.className = 'px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition duration-150';
+        
+        document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    // New Javascript for removeFavorite
+    async function removeFavorite(craftsmanId) {
+        try {
+            const response = await fetch('<?= APP_URL ?>/favorites/toggle', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ craftsman_id: craftsmanId })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                // simple reload to update UI
+                window.location.reload();
+            } else {
+                alert(data.message || 'Failed to remove favorite.');
+            }
+        } catch (e) {
+            console.error('Error removing favorite:', e);
+            alert('An error occurred. Please try again.');
+        }
+    }
+</script>

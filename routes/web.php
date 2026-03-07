@@ -10,6 +10,7 @@ use App\Controllers\ProfileController;
 
 use App\Controllers\BookingController;
 use App\Controllers\ReviewController;
+use App\Controllers\FavoriteController;
 
 /**
  * Register all web routes here.
@@ -57,4 +58,7 @@ $router->post('/bookings/complete', [BookingController::class , 'complete']);
 // Review Routes
 $router->get('/reviews/create', [ReviewController::class , 'create']);
 $router->post('/reviews/create', [ReviewController::class , 'store']);
+
+// Favorite Routes
+$router->post('/favorites/toggle', [FavoriteController::class , 'toggle']);
 

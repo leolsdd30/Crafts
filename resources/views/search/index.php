@@ -83,7 +83,16 @@
         <?php if (!empty($craftsmen)): ?>
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <?php foreach ($craftsmen as $craft): ?>
-            <div class="bg-white overflow-hidden shadow rounded-lg flex flex-col hover:shadow-md transition-shadow duration-200">
+            <div class="bg-white overflow-hidden shadow rounded-lg flex flex-col hover:shadow-md transition-shadow duration-200 relative group">
+                <!-- Favorite Heart -->
+                <?php if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'homeowner'): ?>
+                <button type="button" onclick="toggleFavorite(<?= $craft['user_id'] ?>, this)" class="absolute top-4 right-4 p-2 rounded-full z-10 bg-white shadow-sm border <?= $craft['is_favorite'] ? 'border-pink-200 text-pink-500 hover:bg-pink-50' : 'border-gray-200 text-gray-300 hover:text-pink-400 hover:border-pink-200' ?> transition-colors duration-200 outline-none focus:outline-none" title="<?= $craft['is_favorite'] ? 'Remove from favorites' : 'Save to favorites' ?>">
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" <?= $craft['is_favorite'] ? 'viewBox="0 0 20 20" fill="currentColor"' : 'fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"' ?>>
+                        <path <?= $craft['is_favorite'] ? 'fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"' : 'stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"' ?> />
+                    </svg>
+                </button>
+                <?php endif; ?>
+
                 <div class="p-6 flex-grow">
                     <div class="flex items-center space-x-4 mb-4">
                         <img class="h-16 w-16 rounded-full object-cover border-2 <?= $craft['is_verified'] ? 'border-green-300' : 'border-gray-100' ?>" 
@@ -155,3 +164,53 @@
 
     </div>
 </div>
+
+<script>
+async function toggleFavorite(craftsmanId, btnElement) {
+    const icon = btnElement.querySelector('svg');
+    const isCurrentlyFavorite = btnElement.classList.contains('text-pink-500');
+
+    // Optimistic UI Update
+    if (isCurrentlyFavorite) {
+        btnElement.classList.remove('border-pink-200', 'text-pink-500', 'hover:bg-pink-50');
+        btnElement.classList.add('border-gray-200', 'text-gray-300', 'hover:text-pink-400', 'hover:border-pink-200');
+        btnElement.title = 'Save to favorites';
+        icon.removeAttribute('fill');
+        icon.setAttribute('fill', 'none');
+        icon.setAttribute('stroke', 'currentColor');
+        icon.setAttribute('stroke-width', '2');
+        icon.setAttribute('viewBox', '0 0 24 24');
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />';
+    } else {
+        btnElement.classList.remove('border-gray-200', 'text-gray-300', 'hover:text-pink-400', 'hover:border-pink-200');
+        btnElement.classList.add('border-pink-200', 'text-pink-500', 'hover:bg-pink-50');
+        btnElement.title = 'Remove from favorites';
+        icon.removeAttribute('stroke');
+        icon.removeAttribute('stroke-width');
+        icon.setAttribute('fill', 'currentColor');
+        icon.setAttribute('viewBox', '0 0 20 20');
+        icon.innerHTML = '<path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />';
+    }
+
+    try {
+        const response = await fetch('<?= APP_URL ?>/favorites/toggle', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ craftsman_id: craftsmanId })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            alert(data.message || 'Failed to update favorites.');
+            window.location.reload(); // revert
+        }
+    } catch (e) {
+        console.error('Error toggling favorite:', e);
+        window.location.reload(); // revert
+    }
+}
+</script>

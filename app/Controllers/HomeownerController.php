@@ -6,6 +6,7 @@ use App\Auth\Middleware;
 use App\Models\JobPosting;
 use App\Models\JobQuote;
 use App\Models\Booking;
+use App\Models\Favorite;
 
 class HomeownerController extends Controller
 {
@@ -55,6 +56,10 @@ class HomeownerController extends Controller
                 $b['has_reviewed'] = false;
             }
         }
+        // Load favorites
+        $favoriteModel = new Favorite();
+        $myFavorites = $favoriteModel->getFavoritesForHomeowner($_SESSION['user_id']);
+
         $this->view('layouts/app', [
             'pageTitle' => 'Homeowner Dashboard - CraftConnect',
             'contentView' => 'homeowner/dashboard',
@@ -63,7 +68,8 @@ class HomeownerController extends Controller
             'completedJobsCount' => $completedJobsCount,
             'allQuotes' => $allQuotes,
             'pendingQuotesCount' => $pendingQuotesCount,
-            'bookings' => $myBookings
+            'bookings' => $myBookings,
+            'favorites' => $myFavorites
         ]);
     }
 }

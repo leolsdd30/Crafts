@@ -5,6 +5,7 @@ use App\Core\Controller;
 use App\Models\User;
 use App\Models\CraftsmanProfile;
 use App\Models\Review;
+use App\Models\Favorite;
 use App\Auth\Middleware;
 
 class ProfileController extends Controller
@@ -50,11 +51,17 @@ class ProfileController extends Controller
 
         $reviews = [];
         $rating = ['avg_rating' => 0, 'total_reviews' => 0];
+        $isFavorite = false;
 
         if ($user['role'] === 'craftsman') {
             $reviewModel = new Review();
             $reviews = $reviewModel->getReviewsForCraftsman($id);
             $rating = $reviewModel->getCraftsmanRating($id);
+
+            if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'homeowner') {
+                $favoriteModel = new Favorite();
+                $isFavorite = $favoriteModel->isFavorite($_SESSION['user_id'], $id);
+            }
         }
 
         $this->view('layouts/app', [
@@ -63,7 +70,8 @@ class ProfileController extends Controller
             'user' => $user,
             'craftsmanDetails' => $craftsmanDetails,
             'reviews' => $reviews,
-            'rating' => $rating
+            'rating' => $rating,
+            'isFavorite' => $isFavorite
         ]);
     }
 

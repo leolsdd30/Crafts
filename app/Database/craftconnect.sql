@@ -196,4 +196,20 @@ CREATE TABLE IF NOT EXISTS `reviews` (
   FOREIGN KEY (`craftsman_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `favorites`
+--
+
+CREATE TABLE IF NOT EXISTS `favorites` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `homeowner_id` INT NOT NULL,
+  `craftsman_id` INT NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(`homeowner_id`, `craftsman_id`),
+  FOREIGN KEY (`homeowner_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`craftsman_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 COMMIT;
