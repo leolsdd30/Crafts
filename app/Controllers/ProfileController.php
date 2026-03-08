@@ -229,4 +229,41 @@ class ProfileController extends Controller
         header('Location: ' . APP_URL . '/profile?id=' . $id);
         exit;
     }
+
+    /**
+     * Publish or unpublish the marketing card to the marketplace.
+     */
+    public function publish()
+    {
+        Middleware::requireLogin();
+        $id = $_SESSION['user_id'];
+        $role = $_SESSION['role'] ?? '';
+
+        if ($role !== 'craftsman') {
+            header('Location: ' . APP_URL . '/profile?id=' . $id);
+            exit;
+        }
+
+        $status = $_POST['status'] ?? 1; // Default to published
+
+        $craftsmanModel = new CraftsmanProfile();
+        
+        // Check if profile is setup before publishing
+        if ($status == 1) {
+            $userModel = new User();
+            $user = $userModel->findById($id);
+            $craftsmanDetails = $craftsmanModel->findByUserId($id);
+            
+            if (empty($craftsmanDetails['id']) || empty($user['wilaya']) || empty($user['phone_number'])) {
+                // Profile incomplete
+                header('Location: ' . APP_URL . '/profile?id=' . $id . '&error=incomplete');
+                exit;
+            }
+        }
+
+        $craftsmanModel->setPublishStatus($id, $status);
+
+        header('Location: ' . APP_URL . '/profile?id=' . $id);
+        exit;
+    }
 }

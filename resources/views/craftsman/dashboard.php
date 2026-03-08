@@ -181,7 +181,7 @@
                     <?php if (!empty($bookings)): ?>
                     <div class="space-y-3">
                         <?php foreach ($bookings as $booking): ?>
-                        <div class="bg-white rounded-lg shadow-sm border <?= $booking['status'] === 'requested' ? 'border-yellow-200' : 'border-gray-100' ?> p-5">
+                        <div class="bg-white rounded-lg shadow-sm border <?= $booking['status'] === 'requested' ? 'border-yellow-200' : ($booking['status'] === 'counter_offered' ? 'border-orange-200' : ($booking['status'] === 'in_progress' ? 'border-blue-200' : ($booking['status'] === 'pending_completion' ? 'border-purple-200' : 'border-gray-100'))) ?> p-5">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-base font-bold text-gray-900">
@@ -201,20 +201,47 @@
                                             </svg>
                                             <?= date('M d, Y \a\t g:i A', strtotime($booking['scheduled_date'])) ?>
                                         </span>
+                                        <?php if (!empty($booking['quoted_price'])): ?>
+                                        <span class="flex items-center font-semibold text-green-600">
+                                            $<?= number_format($booking['quoted_price'], 2) ?>
+                                        </span>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                 <span class="ml-3 px-2.5 py-1 inline-flex text-xs leading-4 font-semibold rounded-full 
-                                    <?= $booking['status'] === 'requested' ? 'bg-yellow-100 text-yellow-800' : ($booking['status'] === 'hired' ? 'bg-green-100 text-green-800' : ($booking['status'] === 'completed' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800')) ?>">
-                                    <?= ucfirst($booking['status']) ?>
+                                    <?php
+                                    switch($booking['status']) {
+                                        case 'requested': echo 'bg-yellow-100 text-yellow-800'; break;
+                                        case 'counter_offered': echo 'bg-orange-100 text-orange-800'; break;
+                                        case 'in_progress': echo 'bg-blue-100 text-blue-800'; break;
+                                        case 'pending_completion': echo 'bg-purple-100 text-purple-800'; break;
+                                        case 'completed': echo 'bg-green-100 text-green-800'; break;
+                                        case 'cancelled': echo 'bg-gray-100 text-gray-800'; break;
+                                        default: echo 'bg-gray-100 text-gray-800';
+                                    }
+                                    ?>">
+                                    <?php
+                                    switch($booking['status']) {
+                                        case 'requested': echo 'Requested'; break;
+                                        case 'counter_offered': echo 'Counter Sent'; break;
+                                        case 'in_progress': echo 'In Progress'; break;
+                                        case 'pending_completion': echo 'Awaiting Confirmation'; break;
+                                        case 'completed': echo 'Completed'; break;
+                                        case 'cancelled': echo 'Cancelled'; break;
+                                        default: echo ucfirst($booking['status']);
+                                    }
+                                    ?>
                                 </span>
                             </div>
+
                             <?php if ($booking['status'] === 'requested'): ?>
                             <div class="mt-3 pt-3 border-t border-gray-100 flex items-center space-x-2">
                                 <form id="accept-booking-<?= $booking['id'] ?>" action="<?= APP_URL ?>/bookings/accept" method="POST" class="inline">
                                     <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
                                     <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
-                                    <button type="button" onclick="showConfirmModal('accept-booking-<?= $booking['id'] ?>', 'Accept this booking?', 'You are accepting the booking request from <?= htmlspecialchars($booking['first_name']) ?>. They will be notified.', 'accept')" class="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition duration-150">Accept</button>
+                                    <button type="button" onclick="showConfirmModal('accept-booking-<?= $booking['id'] ?>', 'Accept this booking?', 'The job will start immediately. The homeowner will be notified.', 'accept')" class="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition duration-150">Accept</button>
                                 </form>
+                                <button type="button" onclick="openCounterModal(<?= $booking['id'] ?>, '<?= e($booking['description']) ?>', '<?= e($booking['scheduled_date']) ?>')" class="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-orange-500 hover:bg-orange-600 transition duration-150">Counter-Offer</button>
                                 <form id="decline-booking-<?= $booking['id'] ?>" action="<?= APP_URL ?>/bookings/decline" method="POST" class="inline">
                                     <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
                                     <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
@@ -222,15 +249,35 @@
                                 </form>
                                 <a href="<?= APP_URL ?>/profile?id=<?= $booking['homeowner_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Homeowner</a>
                             </div>
-                            <?php elseif ($booking['status'] === 'hired'): ?>
+
+                            <?php elseif ($booking['status'] === 'counter_offered'): ?>
+                            <div class="mt-3 pt-3 border-t border-orange-100 bg-orange-50 -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                                <p class="text-xs font-semibold text-orange-700 mb-1">📤 Counter-offer sent — waiting for homeowner response</p>
+                                <?php if (!empty($booking['counter_note'])): ?>
+                                <p class="text-xs text-gray-600 italic">"<?= htmlspecialchars($booking['counter_note']) ?>"</p>
+                                <?php endif; ?>
+                            </div>
+
+                            <?php elseif ($booking['status'] === 'in_progress'): ?>
                             <div class="mt-3 pt-3 border-t border-gray-100 flex items-center space-x-2">
                                 <form id="complete-booking-<?= $booking['id'] ?>" action="<?= APP_URL ?>/bookings/complete" method="POST" class="inline">
                                     <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
                                     <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
-                                    <button type="button" onclick="showConfirmModal('complete-booking-<?= $booking['id'] ?>', 'Mark as Completed?', 'This will finalize the booking. The homeowner will be prompted to leave a review.', 'accept')" class="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition duration-150">Mark as Completed</button>
+                                    <button type="button" onclick="showConfirmModal('complete-booking-<?= $booking['id'] ?>', 'Mark as Complete?', 'The homeowner will need to confirm the work is done before the job is fully closed.', 'accept')" class="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition duration-150">Mark as Complete</button>
                                 </form>
                                 <a href="<?= APP_URL ?>/profile?id=<?= $booking['homeowner_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Homeowner</a>
                             </div>
+
+                            <?php elseif ($booking['status'] === 'pending_completion'): ?>
+                            <div class="mt-3 pt-3 border-t border-purple-100 bg-purple-50 -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                                <p class="text-xs font-semibold text-purple-700">⏳ Waiting for homeowner to confirm the job is complete</p>
+                            </div>
+
+                            <?php elseif ($booking['status'] === 'completed'): ?>
+                            <div class="mt-3 pt-3 border-t border-green-100 bg-green-50 -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                                <p class="text-xs font-semibold text-green-700">✅ Job completed and confirmed</p>
+                            </div>
+
                             <?php else: ?>
                             <div class="mt-3 pt-3 border-t border-gray-100 flex items-center space-x-2">
                                 <a href="<?= APP_URL ?>/profile?id=<?= $booking['homeowner_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Homeowner</a>
@@ -375,6 +422,61 @@
     </div>
 </div>
 
+<!-- Counter-Offer Modal -->
+<div id="counter-modal" class="fixed inset-0 z-50 hidden">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity" onclick="closeCounterModal()"></div>
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full transform transition-all">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 bg-orange-100 rounded-full p-2 mr-3">
+                        <svg class="h-6 w-6 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">Send Counter-Offer</h3>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Edit the booking details below and send back to the homeowner. They can accept or cancel.</p>
+                <form id="counter-offer-form" action="<?= APP_URL ?>/bookings/counter-offer" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                    <input type="hidden" name="booking_id" id="counter-booking-id">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Updated Description</label>
+                            <textarea name="counter_description" id="counter-description" rows="3" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm border px-3 py-2" 
+                                placeholder="Describe what you'll do and any changes..." required></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Your Price ($)</label>
+                                <input type="number" name="counter_price" id="counter-price" step="0.01" min="0" 
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm border px-3 py-2" 
+                                    placeholder="0.00" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Proposed Date</label>
+                                <input type="datetime-local" name="counter_date" id="counter-date" 
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm border px-3 py-2" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Note to Homeowner <span class="text-gray-400">(optional)</span></label>
+                            <input type="text" name="counter_note" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm border px-3 py-2" 
+                                placeholder="e.g., I suggest a different date because...">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" onclick="closeCounterModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition duration-150">Cancel</button>
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition duration-150">Send Counter-Offer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Confirmation Modal -->
 <div id="confirm-modal" class="fixed inset-0 z-50 hidden">
     <div class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity" onclick="hideConfirmModal()"></div>
@@ -404,7 +506,7 @@
     </div>
 </div>
 
-<!-- Tab Switching + Confirmation Modal Script -->
+<!-- Tab Switching + Confirmation Modal + Counter-Offer Script -->
 <script>
 var pendingFormId = null;
 
@@ -455,5 +557,22 @@ function confirmAction() {
     if (pendingFormId) {
         document.getElementById(pendingFormId).submit();
     }
+}
+
+// Counter-Offer Modal
+function openCounterModal(bookingId, description, scheduledDate) {
+    document.getElementById('counter-booking-id').value = bookingId;
+    document.getElementById('counter-description').value = description;
+    // Convert the date to datetime-local format
+    if (scheduledDate) {
+        var d = new Date(scheduledDate);
+        var local = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+        document.getElementById('counter-date').value = local;
+    }
+    document.getElementById('counter-modal').classList.remove('hidden');
+}
+
+function closeCounterModal() {
+    document.getElementById('counter-modal').classList.add('hidden');
 }
 </script>

@@ -18,8 +18,16 @@
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                 </svg>
                 <p class="text-sm font-medium text-green-800">
-                    <?php if ($_GET['success'] === 'job_posted'): ?>Your job has been posted successfully! Craftsmen can now submit quotes.
-                    <?php else: ?>Action completed successfully.<?php endif; ?>
+                    <?php 
+                    switch($_GET['success']) {
+                        case 'job_posted': echo 'Your job has been posted successfully! Craftsmen can now submit quotes.'; break;
+                        case 'counter_accepted': echo 'Counter-offer accepted! The job is now in progress.'; break;
+                        case 'counter_cancelled': echo 'Booking has been cancelled.'; break;
+                        case 'job_completed': echo 'Job confirmed as complete! You can now leave a review.'; break;
+                        case 'booking_requested': echo 'Booking request sent successfully!'; break;
+                        default: echo 'Action completed successfully.';
+                    }
+                    ?>
                 </p>
             </div>
         </div>
@@ -218,7 +226,7 @@
                     <?php if (!empty($bookings)): ?>
                     <div class="space-y-3">
                         <?php foreach ($bookings as $booking): ?>
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+                        <div class="bg-white rounded-lg shadow-sm border <?= $booking['status'] === 'counter_offered' ? 'border-orange-200' : ($booking['status'] === 'pending_completion' ? 'border-purple-200' : ($booking['status'] === 'in_progress' ? 'border-blue-200' : 'border-gray-100')) ?> p-5">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-base font-bold text-gray-900">
@@ -238,14 +246,91 @@
                                             </svg>
                                             <?= date('M d, Y \a\t g:i A', strtotime($booking['scheduled_date'])) ?>
                                         </span>
+                                        <?php if (!empty($booking['quoted_price'])): ?>
+                                        <span class="flex items-center font-semibold text-green-600">
+                                            $<?= number_format($booking['quoted_price'], 2) ?>
+                                        </span>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                 <span class="ml-3 px-2.5 py-1 inline-flex text-xs leading-4 font-semibold rounded-full 
-                                    <?= $booking['status'] === 'requested' ? 'bg-yellow-100 text-yellow-800' : ($booking['status'] === 'hired' ? 'bg-green-100 text-green-800' : ($booking['status'] === 'completed' ? 'bg-blue-100 text-blue-800' : ($booking['status'] === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) ?>">
-                                    <?= ucfirst($booking['status']) ?>
+                                    <?php
+                                    switch($booking['status']) {
+                                        case 'requested': echo 'bg-yellow-100 text-yellow-800'; break;
+                                        case 'counter_offered': echo 'bg-orange-100 text-orange-800'; break;
+                                        case 'in_progress': echo 'bg-blue-100 text-blue-800'; break;
+                                        case 'pending_completion': echo 'bg-purple-100 text-purple-800'; break;
+                                        case 'completed': echo 'bg-green-100 text-green-800'; break;
+                                        case 'cancelled': echo 'bg-red-100 text-red-800'; break;
+                                        default: echo 'bg-gray-100 text-gray-800';
+                                    }
+                                    ?>">
+                                    <?php
+                                    switch($booking['status']) {
+                                        case 'requested': echo 'Pending'; break;
+                                        case 'counter_offered': echo 'Counter-Offer'; break;
+                                        case 'in_progress': echo 'In Progress'; break;
+                                        case 'pending_completion': echo 'Confirm Needed'; break;
+                                        case 'completed': echo 'Completed'; break;
+                                        case 'cancelled': echo 'Cancelled'; break;
+                                        default: echo ucfirst($booking['status']);
+                                    }
+                                    ?>
                                 </span>
                             </div>
-                            <?php if ($booking['status'] === 'completed' && empty($booking['has_reviewed'])): ?>
+
+                            <?php if ($booking['status'] === 'counter_offered'): ?>
+                            <!-- Counter-Offer Review Section -->
+                            <div class="mt-3 pt-3 border-t border-orange-100">
+                                <div class="bg-orange-50 rounded-lg p-4 mb-3">
+                                    <p class="text-xs font-bold text-orange-800 uppercase tracking-wider mb-2">📩 Craftsman's Counter-Offer</p>
+                                    <?php if (!empty($booking['counter_description'])): ?>
+                                    <p class="text-sm text-gray-700 mb-2"><span class="font-semibold">Description:</span> <?= htmlspecialchars($booking['counter_description']) ?></p>
+                                    <?php endif; ?>
+                                    <div class="flex flex-wrap gap-4 text-sm">
+                                        <?php if (!empty($booking['counter_price'])): ?>
+                                        <span class="font-semibold text-green-700">💰 Price: $<?= number_format($booking['counter_price'], 2) ?></span>
+                                        <?php endif; ?>
+                                        <?php if (!empty($booking['counter_date'])): ?>
+                                        <span class="text-gray-600">📅 Date: <?= date('M d, Y \a\t g:i A', strtotime($booking['counter_date'])) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php if (!empty($booking['counter_note'])): ?>
+                                    <p class="mt-2 text-sm text-gray-500 italic">"<?= htmlspecialchars($booking['counter_note']) ?>"</p>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <form id="accept-counter-<?= $booking['id'] ?>" action="<?= APP_URL ?>/bookings/accept-counter" method="POST" class="inline">
+                                        <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                                        <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                                        <button type="button" onclick="showConfirmModal('accept-counter-<?= $booking['id'] ?>', 'Accept Counter-Offer?', 'This will accept the craftsman\'s changes and start the job.', 'accept')" class="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition duration-150">Accept Changes</button>
+                                    </form>
+                                    <form id="cancel-counter-<?= $booking['id'] ?>" action="<?= APP_URL ?>/bookings/cancel-counter" method="POST" class="inline">
+                                        <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                                        <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                                        <button type="button" onclick="showConfirmModal('cancel-counter-<?= $booking['id'] ?>', 'Cancel this booking?', 'This will cancel the booking entirely. This cannot be undone.', 'decline')" class="px-3 py-1.5 text-xs font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 transition duration-150">Cancel Booking</button>
+                                    </form>
+                                    <a href="<?= APP_URL ?>/profile?id=<?= $booking['craftsman_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Craftsman</a>
+                                </div>
+                            </div>
+
+                            <?php elseif ($booking['status'] === 'pending_completion'): ?>
+                            <!-- Confirm Completion Section -->
+                            <div class="mt-3 pt-3 border-t border-purple-100">
+                                <div class="bg-purple-50 rounded-lg p-3 mb-3">
+                                    <p class="text-sm font-semibold text-purple-800">⏳ The craftsman has marked this job as complete. Please confirm.</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <form id="confirm-complete-<?= $booking['id'] ?>" action="<?= APP_URL ?>/bookings/confirm-completion" method="POST" class="inline">
+                                        <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                                        <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                                        <button type="button" onclick="showConfirmModal('confirm-complete-<?= $booking['id'] ?>', 'Confirm Job Complete?', 'This confirms the work is done. You will be able to leave a review.', 'accept')" class="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition duration-150">✅ Confirm Completion</button>
+                                    </form>
+                                    <a href="<?= APP_URL ?>/profile?id=<?= $booking['craftsman_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Craftsman</a>
+                                </div>
+                            </div>
+
+                            <?php elseif ($booking['status'] === 'completed' && empty($booking['has_reviewed'])): ?>
                             <div class="mt-3 pt-3 border-t border-gray-100 flex items-center space-x-2">
                                 <a href="<?= APP_URL ?>/reviews/create?booking_id=<?= $booking['id'] ?>" class="inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition duration-150">
                                     <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -265,6 +350,12 @@
                                 </span>
                                 <a href="<?= APP_URL ?>/profile?id=<?= $booking['craftsman_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Craftsman</a>
                             </div>
+
+                            <?php elseif ($booking['status'] === 'in_progress'): ?>
+                            <div class="mt-3 pt-3 border-t border-blue-100 bg-blue-50 -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                                <p class="text-xs font-semibold text-blue-700">🔧 Job is in progress — the craftsman will mark it complete when done.</p>
+                            </div>
+
                             <?php else: ?>
                             <div class="mt-3 pt-3 border-t border-gray-100 flex items-center space-x-2">
                                 <a href="<?= APP_URL ?>/profile?id=<?= $booking['craftsman_id'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition duration-150">View Craftsman</a>

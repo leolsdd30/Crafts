@@ -8,6 +8,17 @@
 
     <!-- Main Content Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
+        <?php if (isset($_GET['error']) && $_GET['error'] === 'incomplete'): ?>
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center shadow-sm">
+            <svg class="h-5 w-5 mr-2 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            <p class="text-sm font-bold">
+                Cannot publish profile: Missing required information. Please edit your profile to add your service category, location, and phone number.
+            </p>
+        </div>
+        <?php endif; ?>
+
         <div class="bg-white shadow-xl rounded-xl mt-8">
             <div class="grid grid-cols-1 md:grid-cols-3 items-start">
                 
@@ -97,13 +108,18 @@
                             </a>
 
                             <?php if ($user['role'] === 'craftsman'): ?>
-                            <button onclick="openLaunchModal()" class="w-full inline-flex justify-center flex-col items-center px-4 py-2.5 border border-transparent shadow-lg text-sm font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 relative overflow-hidden group">
-                                <span class="relative flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                      <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                            <button onclick="openLaunchModal()" class="w-full mt-4 flex items-center justify-center px-4 py-3 text-sm font-medium text-white <?= !empty($craftsmanDetails['is_published']) ? 'bg-green-600 hover:bg-green-700' : 'bg-indigo-600 hover:bg-indigo-700' ?> rounded-lg transition duration-150 shadow-sm">
+                                <?php if (!empty($craftsmanDetails['is_published'])): ?>
+                                    <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    Card is Live
+                                <?php else: ?>
+                                    <svg class="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
                                     </svg>
                                     Launch Card
-                                </span>
+                                <?php endif; ?>
                             </button>
                             <?php endif; ?>
 
@@ -196,33 +212,46 @@
 <!-- Launch Card Modal -->
 <div id="launchModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="closeLaunchModal()"></div>
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity" aria-hidden="true" onclick="closeLaunchModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-gray-100">
-            
-            <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-6 border-b border-indigo-700 flex justify-between items-center relative overflow-hidden">
-                <!-- Abstract decorative bg -->
-                <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 15px 15px;"></div>
-                <h3 class="text-2xl leading-6 font-extrabold text-white relative z-10 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    Launch Your Marketing Card
-                </h3>
-                <button onclick="closeLaunchModal()" class="text-indigo-200 hover:text-white transition relative z-10">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100">
+            <div class="px-6 pt-6 pb-2">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-indigo-100 rounded-full p-2 mr-3">
+                            <svg class="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900">Launch Card Preview</h3>
+                    </div>
+                    <button onclick="closeLaunchModal()" class="text-gray-400 hover:text-gray-500 transition">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <div class="bg-white px-6 pt-5 pb-8">
-                <p class="text-gray-600 mb-6 text-center text-sm md:text-base px-4">
-                    Preview how your business card will appear to homeowners in the marketplace search results. Make sure your profile looks amazing!
+            <div class="bg-white px-6 pt-2 pb-6">
+                <?php if (empty($craftsmanDetails['id']) || empty($user['wilaya']) || empty($user['phone_number'])): ?>
+                <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-md mb-6 text-sm shadow-sm">
+                    <p class="font-bold flex items-center">
+                        <svg class="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        Profile Incomplete
+                    </p>
+                    <p class="mt-1 text-yellow-700">To publish your marketing card, please <a href="<?= APP_URL ?>/profile/edit" class="font-bold underline hover:text-yellow-900">edit your profile</a> and provide your service category, hourly rate, phone number, and location first.</p>
+                </div>
+                <?php else: ?>
+                <p class="text-gray-500 mb-4 text-center text-sm leading-relaxed">
+                    This is how your business card appears to homeowners.
                 </p>
+                <?php endif; ?>
 
-                <!-- Demo Card Box (Direct mirror of search/index.php cards) -->
-                <div class="max-w-xs mx-auto bg-white overflow-hidden shadow-lg rounded-xl flex flex-col hover:shadow-xl transition-shadow duration-300 border border-t border-gray-100 ring-1 ring-black ring-opacity-5">
+                <!-- Demo Card Box -->
+                <div class="bg-white overflow-hidden shadow-md rounded-xl flex flex-col border border-gray-100 mx-auto w-full">
                     <div class="p-6 flex-grow relative overflow-hidden">
                         <!-- Tiny accent banner -->
                         <div class="h-1 bg-indigo-500 absolute top-0 inset-x-0"></div>
@@ -230,7 +259,7 @@
                         <div class="flex items-center space-x-4 mb-4 mt-2">
                             <div class="relative">
                                 <img class="h-16 w-16 rounded-full object-cover border-2 <?= !empty($craftsmanDetails['is_verified']) ? 'border-green-300' : 'border-gray-200' ?> shadow-sm" 
-                                     src="<?= APP_URL ?>/uploads/profile/<?= htmlspecialchars($user['profile_picture'] ?? 'default.png') ?>" 
+                                     src="<?= get_profile_picture_url($user['profile_picture'] ?? 'default.png', $user['first_name'], $user['last_name']) ?>" 
                                      alt="<?= htmlspecialchars($user['first_name']) ?>">
                                 <?php if (!empty($craftsmanDetails['is_verified'])): ?>
                                 <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
@@ -276,16 +305,38 @@
                 </div>
 
             </div>
-            <div class="bg-gray-50 px-6 py-4 flex flex-col sm:flex-row-reverse sm:gap-3 items-center border-t border-gray-200">
-                <button type="button" onclick="confirmLaunch()" class="w-full sm:w-auto inline-flex justify-center items-center px-6 py-2.5 border border-transparent shadow-sm text-sm font-bold rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 mb-3 sm:mb-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                    Publish to Marketplace
-                </button>
-                <button type="button" onclick="closeLaunchModal()" class="w-full sm:w-auto inline-flex justify-center px-6 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                    Cancel
-                </button>
+            <div class="bg-gray-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 border-t border-gray-200">
+                <div class="w-full sm:w-auto mt-3 sm:mt-0">
+                    <button type="button" onclick="closeLaunchModal()" class="w-full inline-flex justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150">
+                        Cancel
+                    </button>
+                </div>
+
+                <div class="w-full sm:w-auto">
+                    <?php if (!empty($craftsmanDetails['id']) && !empty($user['wilaya']) && !empty($user['phone_number'])): ?>
+                    <form id="publishForm" action="<?= APP_URL ?>/profile/publish" method="POST" class="w-full">
+                        <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                        <input type="hidden" name="status" value="<?= !empty($craftsmanDetails['is_published']) ? '0' : '1' ?>">
+                        <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-bold rounded-md text-white <?= !empty($craftsmanDetails['is_published']) ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700' ?> focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                            <?php if (!empty($craftsmanDetails['is_published'])): ?>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd" />
+                                </svg>
+                                Unpublish Card
+                            <?php else: ?>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                Go Live Now
+                            <?php endif; ?>
+                        </button>
+                    </form>
+                    <?php else: ?>
+                    <a href="<?= APP_URL ?>/profile/edit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-bold rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 relative overflow-hidden group">
+                        Complete Profile First
+                    </a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
@@ -390,8 +441,7 @@ function closeLaunchModal() {
 }
 
 function confirmLaunch() {
-    alert('Congratulations! Your profile card is now live and actively ranking in the marketplace. (This is a Phase 7 integration demo)');
-    closeLaunchModal();
+    document.getElementById('publishForm').submit();
 }
 
 async function toggleFavorite(craftsmanId, btnElement) {

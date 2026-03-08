@@ -14,10 +14,9 @@ class CraftsmanProfile extends Model
         $sql = "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.wilaya 
                 FROM craftsmen_profiles cp
                 JOIN users u ON cp.user_id = u.id
-                WHERE u.is_active = TRUE AND u.role = 'craftsman'";
+                WHERE u.is_active = TRUE AND u.role = 'craftsman' AND cp.is_published = TRUE";
 
         $params = [];
-
         if (!empty($filters['category'])) {
             $sql .= " AND cp.service_category = :category";
             $params['category'] = $filters['category'];
@@ -47,6 +46,15 @@ class CraftsmanProfile extends Model
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Publish or unpublish a craftsman profile.
+     */
+    public function setPublishStatus($userId, $status)
+    {
+        $stmt = $this->db->prepare("UPDATE craftsmen_profiles SET is_published = :status WHERE user_id = :user_id");
+        return $stmt->execute(['status' => (int)$status, 'user_id' => $userId]);
     }
 
     /**

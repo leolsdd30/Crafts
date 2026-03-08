@@ -30,6 +30,7 @@ $router->get('/profile', [ProfileController::class , 'show']);
 // Profile Management Routes
 $router->get('/profile/edit', [ProfileController::class , 'edit']);
 $router->post('/profile/edit', [ProfileController::class , 'update']);
+$router->post('/profile/publish', [ProfileController::class , 'publish']);
 
 // Authentication Routes
 $router->get('/login', [AuthController::class , 'showLoginForm']);
@@ -57,6 +58,10 @@ $router->post('/bookings/create', [BookingController::class , 'store']);
 $router->post('/bookings/accept', [BookingController::class , 'accept']);
 $router->post('/bookings/decline', [BookingController::class , 'decline']);
 $router->post('/bookings/complete', [BookingController::class , 'complete']);
+$router->post('/bookings/counter-offer', [BookingController::class , 'counterOffer']);
+$router->post('/bookings/accept-counter', [BookingController::class , 'acceptCounter']);
+$router->post('/bookings/cancel-counter', [BookingController::class , 'cancelCounter']);
+$router->post('/bookings/confirm-completion', [BookingController::class , 'confirmCompletion']);
 
 // Review Routes
 $router->get('/reviews/create', [ReviewController::class , 'create']);

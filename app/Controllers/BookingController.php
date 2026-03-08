@@ -109,7 +109,7 @@ class BookingController extends Controller
     }
 
     /**
-     * Craftsman accepts a booking request.
+     * Craftsman accepts a booking request — goes directly to in_progress.
      */
     public function accept()
     {
@@ -131,7 +131,7 @@ class BookingController extends Controller
             exit;
         }
 
-        $bookingModel->updateStatus($bookingId, 'hired');
+        $bookingModel->updateStatus($bookingId, 'in_progress');
 
         // Auto-promote any pending message requests between these users
         $msgModel = new Message();
@@ -140,10 +140,128 @@ class BookingController extends Controller
         // Notify homeowner
         $notif = new Notification();
         $notif->send($booking['homeowner_id'], 'booking_accepted', 'Booking Accepted!', 
-            'Your booking request has been accepted. The job is now active.', 
+            'Your booking request has been accepted. The job is now in progress.', 
             APP_URL . '/homeowner/dashboard');
 
         header("Location: " . APP_URL . "/craftsman/dashboard?success=booking_accepted");
+        exit;
+    }
+
+    /**
+     * Craftsman sends a counter-offer with edited details.
+     */
+    public function counterOffer()
+    {
+        Middleware::requireLogin();
+        Middleware::verifyCsrfToken();
+
+        $bookingId = $_POST['booking_id'] ?? null;
+        $counterDescription = trim($_POST['counter_description'] ?? '');
+        $counterPrice = $_POST['counter_price'] ?? null;
+        $counterDate = $_POST['counter_date'] ?? '';
+        $counterNote = trim($_POST['counter_note'] ?? '');
+
+        if (!$bookingId || empty($counterDescription) || empty($counterPrice) || empty($counterDate)) {
+            header("Location: " . APP_URL . "/craftsman/dashboard?error=missing_fields");
+            exit;
+        }
+
+        $bookingModel = new Booking();
+        $booking = $bookingModel->findById($bookingId);
+
+        if (!$booking || $booking['craftsman_id'] != $_SESSION['user_id'] || $booking['status'] !== 'requested') {
+            echo "Access Denied.";
+            exit;
+        }
+
+        $bookingModel->counterOffer($bookingId, [
+            'counter_description' => $counterDescription,
+            'counter_price' => $counterPrice,
+            'counter_date' => $counterDate,
+            'counter_note' => $counterNote
+        ]);
+
+        // Auto-promote messaging 
+        $msgModel = new Message();
+        $msgModel->autoPromoteOnBooking($booking['homeowner_id'], $booking['craftsman_id']);
+
+        // Notify homeowner
+        $notif = new Notification();
+        $notif->send($booking['homeowner_id'], 'booking_counter', 'Counter-Offer Received', 
+            $_SESSION['first_name'] . ' has sent a counter-offer for your booking. Please review the changes.', 
+            APP_URL . '/homeowner/dashboard');
+
+        header("Location: " . APP_URL . "/craftsman/dashboard?success=counter_sent");
+        exit;
+    }
+
+    /**
+     * Homeowner accepts the craftsman's counter-offer.
+     */
+    public function acceptCounter()
+    {
+        Middleware::requireLogin();
+        Middleware::verifyCsrfToken();
+
+        $bookingId = $_POST['booking_id'] ?? null;
+
+        if (!$bookingId) {
+            header("Location: " . APP_URL . "/homeowner/dashboard");
+            exit;
+        }
+
+        $bookingModel = new Booking();
+        $booking = $bookingModel->findById($bookingId);
+
+        if (!$booking || $booking['homeowner_id'] != $_SESSION['user_id'] || $booking['status'] !== 'counter_offered') {
+            echo "Access Denied.";
+            exit;
+        }
+
+        $bookingModel->acceptCounterOffer($bookingId);
+
+        // Notify craftsman
+        $notif = new Notification();
+        $notif->send($booking['craftsman_id'], 'counter_accepted', 'Counter-Offer Accepted!', 
+            $_SESSION['first_name'] . ' accepted your counter-offer. The job is now in progress!', 
+            APP_URL . '/craftsman/dashboard');
+
+        header("Location: " . APP_URL . "/homeowner/dashboard?success=counter_accepted");
+        exit;
+    }
+
+    /**
+     * Homeowner rejects the counter-offer (cancels booking).
+     */
+    public function cancelCounter()
+    {
+        Middleware::requireLogin();
+        Middleware::verifyCsrfToken();
+
+        $bookingId = $_POST['booking_id'] ?? null;
+
+        if (!$bookingId) {
+            header("Location: " . APP_URL . "/homeowner/dashboard");
+            exit;
+        }
+
+        $bookingModel = new Booking();
+        $booking = $bookingModel->findById($bookingId);
+
+        if (!$booking || $booking['homeowner_id'] != $_SESSION['user_id'] || $booking['status'] !== 'counter_offered') {
+            echo "Access Denied.";
+            exit;
+        }
+
+        $bookingModel->updateStatus($bookingId, 'cancelled');
+
+        // Notify craftsman
+        $notif = new Notification();
+        $notif->send($booking['craftsman_id'], 'counter_rejected', 'Counter-Offer Declined', 
+            $_SESSION['first_name'] . ' has declined your counter-offer. The booking has been cancelled.', 
+            APP_URL . '/craftsman/dashboard');
+
+        header("Location: " . APP_URL . "/homeowner/dashboard?success=counter_cancelled");
         exit;
     }
 
@@ -183,7 +301,7 @@ class BookingController extends Controller
     }
 
     /**
-     * Craftsman marks a booking as completed.
+     * Craftsman marks a booking as pending completion (waiting for homeowner).
      */
     public function complete()
     {
@@ -205,17 +323,52 @@ class BookingController extends Controller
             exit;
         }
 
-        if ($booking['status'] === 'hired') {
-            $bookingModel->updateStatus($bookingId, 'completed');
+        if ($booking['status'] === 'in_progress') {
+            $bookingModel->markPendingCompletion($bookingId);
 
             // Notify homeowner
             $notif = new Notification();
-            $notif->send($booking['homeowner_id'], 'booking_completed', 'Job Completed!', 
-                'Your job has been marked as completed. You can now leave a review!', 
-                APP_URL . '/reviews/create?booking_id=' . $bookingId);
+            $notif->send($booking['homeowner_id'], 'booking_pending', 'Job Pending Confirmation', 
+                'The craftsman has marked the job as complete. Please confirm the work is done.', 
+                APP_URL . '/homeowner/dashboard');
         }
 
-        header("Location: " . APP_URL . "/craftsman/dashboard?success=booking_completed");
+        header("Location: " . APP_URL . "/craftsman/dashboard?success=completion_pending");
+        exit;
+    }
+
+    /**
+     * Homeowner confirms the job is truly completed.
+     */
+    public function confirmCompletion()
+    {
+        Middleware::requireLogin();
+        Middleware::verifyCsrfToken();
+
+        $bookingId = $_POST['booking_id'] ?? null;
+
+        if (!$bookingId) {
+            header("Location: " . APP_URL . "/homeowner/dashboard");
+            exit;
+        }
+
+        $bookingModel = new Booking();
+        $booking = $bookingModel->findById($bookingId);
+
+        if (!$booking || $booking['homeowner_id'] != $_SESSION['user_id'] || $booking['status'] !== 'pending_completion') {
+            echo "Access Denied.";
+            exit;
+        }
+
+        $bookingModel->confirmCompletion($bookingId);
+
+        // Notify craftsman
+        $notif = new Notification();
+        $notif->send($booking['craftsman_id'], 'booking_completed', 'Job Confirmed Complete!', 
+            $_SESSION['first_name'] . ' has confirmed the work is done. Great job!', 
+            APP_URL . '/craftsman/dashboard');
+
+        header("Location: " . APP_URL . "/homeowner/dashboard?success=job_completed");
         exit;
     }
 }
