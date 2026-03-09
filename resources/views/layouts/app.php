@@ -9,6 +9,28 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar Styling - Sleek & Thin */
+        ::-webkit-scrollbar {
+            width: 4px; /* Thin width */
+            height: 4px; /* Thin height for horizontal scrollbars */
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; /* No unsightly track background */
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1; /* Very subtle slate-300 by default */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #818cf8; /* indigo-400 on hover for interaction */
+        }
+        
+        /* Firefox Support */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
     </style>
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen text-gray-900">
