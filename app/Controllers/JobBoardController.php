@@ -30,7 +30,10 @@ class JobBoardController extends Controller
             'pageTitle' => 'Browse Jobs - CraftConnect',
             'contentView' => 'jobboard/index',
             'jobs' => $jobs,
-            'filters' => $filters
+            'filters' => $filters,
+            'metaDescription' => 'Browse available jobs and projects posted by homeowners on CraftConnect. Find your next gig today.',
+            'ogTitle' => 'Browse Jobs on CraftConnect',
+            'ogDescription' => 'Browse available jobs and projects posted by homeowners on CraftConnect. Find your next gig today.'
         ]);
     }
 
@@ -132,12 +135,20 @@ class JobBoardController extends Controller
             $alreadyQuoted = $quoteModel->hasAlreadyQuoted($id, $_SESSION['user_id']);
         }
 
+        $ogTitle = htmlspecialchars($job['title']) . ' - CraftConnect Job Board';
+        $metaDesc = "View the job '{$job['title']}' in the {$job['service_category']} category. " . 
+                    ($job['budget_range'] ? "Budget: {$job['budget_range']} DZD. " : "") . 
+                    "Location: {$job['address']}. Apply now on CraftConnect.";
+
         $this->view('layouts/app', [
             'pageTitle' => $job['title'] . ' - CraftConnect',
             'contentView' => 'jobboard/show',
             'job' => $job,
             'quotes' => $quotes,
-            'alreadyQuoted' => $alreadyQuoted
+            'alreadyQuoted' => $alreadyQuoted,
+            'metaDescription' => $metaDesc,
+            'ogTitle' => $ogTitle,
+            'ogDescription' => $metaDesc
         ]);
     }
 

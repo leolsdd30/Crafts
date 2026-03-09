@@ -42,7 +42,10 @@ class SearchController extends Controller
             'pageTitle' => 'Find Skilled Professionals - CraftConnect',
             'contentView' => 'search/index',
             'craftsmen' => $craftsmen,
-            'filters' => $filters
+            'filters' => $filters,
+            'metaDescription' => 'Find and hire skilled professionals and craftsmen in Algeria. Read reviews, view portfolios, and request bookings directly on CraftConnect.',
+            'ogTitle' => 'Find Skilled Professionals on CraftConnect',
+            'ogDescription' => 'Find and hire skilled professionals and craftsmen in Algeria. Read reviews, view portfolios, and request bookings directly on CraftConnect.'
         ]);
     }
 

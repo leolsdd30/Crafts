@@ -4,6 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?? 'CraftConnect' ?></title>
+    
+    <!-- SEO and Open Graph Meta Tags -->
+    <?php
+        $defaultDesc = 'CraftConnect - The premier platform connecting skilled craftsmen and homeowners in Algeria.';
+        $defaultImg = APP_URL . '/assets/img/og-preview.jpg'; // We can add a generic preview later
+        
+        $desc = $metaDescription ?? $ogDescription ?? $defaultDesc;
+        $title = $ogTitle ?? $pageTitle ?? 'CraftConnect';
+        $img = $ogImage ?? $defaultImg;
+    ?>
+    <meta name="description" content="<?= htmlspecialchars($desc) ?>">
+    
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?= APP_URL . $_SERVER['REQUEST_URI'] ?>">
+    <meta property="og:title" content="<?= htmlspecialchars($title) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($desc) ?>">
+    <meta property="og:image" content="<?= htmlspecialchars($img) ?>">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="<?= APP_URL . $_SERVER['REQUEST_URI'] ?>">
+    <meta property="twitter:title" content="<?= htmlspecialchars($title) ?>">
+    <meta property="twitter:description" content="<?= htmlspecialchars($desc) ?>">
+    <meta property="twitter:image" content="<?= htmlspecialchars($img) ?>">
     <!-- Use Tailwind via CDN for prototyping -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>

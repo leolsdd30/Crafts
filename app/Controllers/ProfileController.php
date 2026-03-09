@@ -82,14 +82,31 @@ class ProfileController extends Controller
             }
         }
 
+        // Prepare SEO Tags
+        $fullName = $user['first_name'] . ' ' . $user['last_name'];
+        $ogTitle = $fullName . ' - Profile on CraftConnect';
+        $metaDesc = "View the profile of {$fullName} on CraftConnect.";
+        
+        if ($user['role'] === 'craftsman') {
+            $service = $craftsmanDetails['service_category'] ?? 'Professional';
+            $loc = !empty($user['wilaya']) ? " in {$user['wilaya']}" : "";
+            $metaDesc = "Hire {$fullName}, a skilled {$service}{$loc} on CraftConnect. Read reviews and view their portfolio.";
+        }
+
+        $ogImage = APP_URL . get_profile_picture_url($user['profile_picture'] ?? 'default.png', $user['first_name'], $user['last_name']);
+
         $this->view('layouts/app', [
-            'pageTitle' => $user['first_name'] . ' ' . $user['last_name'] . ' - Profile',
+            'pageTitle' => $fullName . ' - Profile',
             'contentView' => 'profile/show',
             'user' => $user,
             'craftsmanDetails' => $craftsmanDetails,
             'reviews' => $reviews,
             'rating' => $rating,
-            'isFavorite' => $isFavorite
+            'isFavorite' => $isFavorite,
+            'metaDescription' => $metaDesc,
+            'ogTitle' => $ogTitle,
+            'ogDescription' => $metaDesc,
+            'ogImage' => $ogImage
         ]);
     }
 

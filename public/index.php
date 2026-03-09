@@ -1,4 +1,9 @@
 <?php
+// Security Headers
+header("X-Frame-Options: DENY");
+header("X-XSS-Protection: 1; mode=block");
+header("X-Content-Type-Options: nosniff");
+header("Referrer-Policy: strict-origin-when-cross-origin");
 
 // Define the absolute path to the root directory
 define('BASE_PATH', dirname(__DIR__));
@@ -40,4 +45,19 @@ else {
 $method = $_POST['_method'] ?? $_SERVER['REQUEST_METHOD'];
 
 
-$router->dispatch($uri, $method);
+try {
+    $router->dispatch($uri, $method);
+} catch (\Throwable $e) {
+    // Log the error internally (can be expanded later)
+    error_log($e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+    
+    // Check if we are in a development environment where we'd want to see this
+    // For now, always show the 500 page
+    http_response_code(500);
+    $viewPath = BASE_PATH . '/resources/views/errors/500.php';
+    if (file_exists($viewPath)) {
+        require $viewPath;
+    } else {
+        echo "500 - Internal Server Error";
+    }
+}

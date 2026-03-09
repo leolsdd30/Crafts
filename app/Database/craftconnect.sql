@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `first_name` VARCHAR(100) NOT NULL,
   `last_name` VARCHAR(100) NOT NULL,
+  `username` VARCHAR(50) UNIQUE DEFAULT NULL,
+  `username_updated_at` TIMESTAMP NULL DEFAULT NULL,
   `email` VARCHAR(255) UNIQUE NOT NULL,
   `password_hash` VARCHAR(255) NOT NULL,
   `role` ENUM('homeowner', 'craftsman', 'admin') DEFAULT 'homeowner',
