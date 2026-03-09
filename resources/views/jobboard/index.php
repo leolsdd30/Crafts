@@ -96,8 +96,8 @@
         <?php if (!empty($jobs)): ?>
         <div class="space-y-4">
             <?php foreach ($jobs as $job): ?>
-            <a href="<?= APP_URL ?>/jobs/show?id=<?= $job['id'] ?>" class="block bg-white shadow rounded-lg hover:shadow-md transition-shadow duration-200">
-                <div class="px-6 py-5">
+            <a href="<?= APP_URL ?>/jobs/<?= $job['id'] ?>" class="block bg-white shadow rounded-lg hover:shadow-md transition-shadow duration-200">
+                <div class="p-6">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 min-w-0">
                             <h2 class="text-lg font-semibold text-indigo-600 truncate"><?= htmlspecialchars($job['title']) ?></h2>

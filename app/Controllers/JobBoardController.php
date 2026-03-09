@@ -101,9 +101,13 @@ class JobBoardController extends Controller
     /**
      * Show a single job's details.
      */
-    public function show()
+    public function show($id = null)
     {
-        $id = $_GET['id'] ?? null;
+        // Legacy redirect support
+        if (isset($_GET['id']) && !$id) {
+            header("Location: " . APP_URL . "/jobs/" . $_GET['id'], true, 301);
+            exit;
+        }
 
         if (!$id) {
             echo "Job not found.";

@@ -13,22 +13,40 @@ class ProfileController extends Controller
     /**
      * Show a detailed profile of a single user (Homeowner or Craftsman).
      */
-    public function show()
+    public function show($username = null)
     {
-        $id = $_GET['id'] ?? null;
-
-        if (!$id) {
-            echo "User not found.";
-            exit;
-        }
-
         $userModel = new User();
-        $user = $userModel->findById($id);
+        $user = null;
+
+        // 1. Direct username lookup (e.g., /profile/ahmed_dev)
+        if ($username) {
+            $user = $userModel->findByUsername($username);
+        } 
+        // 2. Legacy lookup by ID, immediately redirect to clean URL
+        elseif (isset($_GET['id'])) {
+            $user = $userModel->findById($_GET['id']);
+            if ($user && !empty($user['username'])) {
+                header("Location: " . APP_URL . "/profile/" . $user['username'], true, 301);
+                exit;
+            }
+        } 
+        // 3. Fallback for just /profile - redirect to own profile
+        elseif (isset($_SESSION['user_id'])) {
+            $user = $userModel->findById($_SESSION['user_id']);
+            if ($user && !empty($user['username'])) {
+                header("Location: " . APP_URL . "/profile/" . $user['username']);
+                exit;
+            }
+        }
 
         if (!$user) {
-            echo "User not found.";
+            // Can be expanded to return a proper 404 view later
+            echo "User not found or no valid username.";
             exit;
         }
+
+        // We use the internal $id for related queries
+        $id = $user['id'];
 
         $craftsmanDetails = null;
 
@@ -113,19 +131,51 @@ class ProfileController extends Controller
         $lastName = trim($_POST['last_name'] ?? '');
         $phone = trim($_POST['phone_number'] ?? '');
         $wilaya = trim($_POST['wilaya'] ?? '');
+        $username = trim($_POST['username'] ?? '');
 
         // Handle basic User table updates
         $userModel = new User();
         $user = $userModel->findById($id);
 
-        $sql = "UPDATE users SET first_name = :first_name, last_name = :last_name, phone_number = :phone_number, wilaya = :wilaya WHERE id = :id";
-        $userModel->executeQuery($sql, [
+        // Username Logic
+        $usernameUpdateSql = "";
+        $usernameParams = [];
+        if (!empty($username) && $username !== $user['username']) {
+            // Check regex format server-side
+            if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]{2,}$/', $username)) {
+                // Sanitize slug
+                $username = strtolower(trim($username));
+                
+                // Check if 14 days have passed
+                $canUpdate = true;
+                if (!empty($user['username_updated_at'])) {
+                    $lastUpdated = strtotime($user['username_updated_at']);
+                    if (time() - $lastUpdated < (14 * 24 * 60 * 60)) {
+                        $canUpdate = false;
+                    }
+                }
+                
+                if ($canUpdate) {
+                    // Check if unique
+                    $existing = $userModel->findByUsername($username);
+                    if (!$existing || $existing['id'] == $id) {
+                        $usernameUpdateSql = ", username = :username, username_updated_at = NOW()";
+                        $usernameParams['username'] = $username;
+                    }
+                }
+            }
+        }
+
+        $sql = "UPDATE users SET first_name = :first_name, last_name = :last_name, phone_number = :phone_number, wilaya = :wilaya {$usernameUpdateSql} WHERE id = :id";
+        $params = [
             'first_name' => $firstName,
             'last_name' => $lastName,
             'phone_number' => $phone,
             'wilaya' => $wilaya,
             'id' => $id
-        ]);
+        ];
+
+        $userModel->executeQuery($sql, array_merge($params, $usernameParams));
 
         // Handle Profile Picture Removal
         if (isset($_POST['remove_picture']) && $_POST['remove_picture'] == '1') {
@@ -263,7 +313,33 @@ class ProfileController extends Controller
 
         $craftsmanModel->setPublishStatus($id, $status);
 
-        header('Location: ' . APP_URL . '/profile?id=' . $id);
+        header('Location: ' . APP_URL . '/profile/' . ($user['username'] ?? $id));
+        exit;
+    }
+
+    /**
+     * AJAX endpoint: Check if a username is available.
+     */
+    public function checkUsername()
+    {
+        header('Content-Type: application/json');
+        
+        $username = trim($_GET['username'] ?? '');
+        $currentUserId = $_SESSION['user_id'] ?? null;
+
+        if (empty($username)) {
+            echo json_encode(['available' => false, 'message' => 'Username is empty.']);
+            exit;
+        }
+
+        $userModel = new User();
+        $existing = $userModel->findByUsername($username);
+
+        if ($existing && $existing['id'] != $currentUserId) {
+            echo json_encode(['available' => false, 'message' => 'This username is already taken.']);
+        } else {
+            echo json_encode(['available' => true, 'message' => 'Username is available!']);
+        }
         exit;
     }
 }

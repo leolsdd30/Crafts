@@ -31,6 +31,10 @@ $router->get('/profile', [ProfileController::class , 'show']);
 $router->get('/profile/edit', [ProfileController::class , 'edit']);
 $router->post('/profile/edit', [ProfileController::class , 'update']);
 $router->post('/profile/publish', [ProfileController::class , 'publish']);
+$router->get('/profile/check-username', [ProfileController::class , 'checkUsername']);
+
+// Dynamic Profile Route (Must be after other /profile/... routes)
+$router->get('/profile/{username}', [ProfileController::class , 'show']);
 
 // Authentication Routes
 $router->get('/login', [AuthController::class , 'showLoginForm']);
@@ -47,7 +51,7 @@ $router->get('/craftsman/dashboard', [CraftsmanController::class , 'dashboard'])
 $router->get('/jobs', [JobBoardController::class , 'index']);
 $router->get('/jobs/create', [JobBoardController::class , 'create']);
 $router->post('/jobs/create', [JobBoardController::class , 'store']);
-$router->get('/jobs/show', [JobBoardController::class , 'show']);
+$router->get('/jobs/{id}', [JobBoardController::class , 'show']);
 $router->post('/jobs/quote', [JobBoardController::class , 'submitQuote']);
 $router->post('/jobs/accept-quote', [JobBoardController::class , 'acceptQuote']);
 $router->post('/jobs/reject-quote', [JobBoardController::class , 'rejectQuote']);

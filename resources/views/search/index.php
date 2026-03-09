@@ -140,8 +140,8 @@
                 </div>
 
                 <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 mt-auto">
-                    <a href="<?= APP_URL ?>/profile?id=<?= $craft['user_id'] ?>" class="block w-full text-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
-                        View Profile
+                    <a href="<?= APP_URL ?>/profile/<?= $craft['username'] ?>" class="block w-full text-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
+                        View Full Profile
                     </a>
                 </div>
             </div>

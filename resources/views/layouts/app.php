@@ -117,7 +117,7 @@
                             </span>
                             <?php endif; ?>
                         </a>
-                        <a href="<?= APP_URL ?>/profile?id=<?= $_SESSION['user_id'] ?>" class="flex items-center space-x-2 hover:bg-gray-50 p-1.5 pr-3 rounded-full transition-colors duration-200 border border-transparent hover:border-gray-200" title="View Profile">
+                        <a href="<?= APP_URL ?>/profile" class="flex items-center space-x-2 hover:bg-gray-50 p-1.5 pr-3 rounded-full transition-colors duration-200 border border-transparent hover:border-gray-200" title="View Profile">
                             <?php if ($headerPicUrl): ?>
                                 <img src="<?= $headerPicUrl ?>" alt="Profile" class="w-8 h-8 rounded-full object-cover border border-gray-200">
                             <?php endif; ?>

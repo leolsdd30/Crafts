@@ -11,7 +11,7 @@ class CraftsmanProfile extends Model
      */
     public function getAllCraftsmen($filters = [])
     {
-        $sql = "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.wilaya 
+        $sql = "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.wilaya, u.username 
                 FROM craftsmen_profiles cp
                 JOIN users u ON cp.user_id = u.id
                 WHERE u.is_active = TRUE AND u.role = 'craftsman' AND cp.is_published = TRUE";
@@ -63,7 +63,7 @@ class CraftsmanProfile extends Model
     public function findByUserId($userId)
     {
         $stmt = $this->db->prepare(
-            "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.phone_number, u.wilaya 
+            "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.phone_number, u.wilaya, u.username 
              FROM craftsmen_profiles cp
              JOIN users u ON cp.user_id = u.id
              WHERE cp.user_id = :user_id"

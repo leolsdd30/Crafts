@@ -22,6 +22,21 @@ class User extends Model
     }
 
     /**
+     * Find a user by their unique username
+     * 
+     * @param string $username
+     * @return array|false 
+     */
+    public function findByUsername(string $username)
+    {
+        $stmt = $this->query("SELECT * FROM users WHERE username = :username LIMIT 1", [
+            'username' => $username
+        ]);
+
+        return $stmt->fetch();
+    }
+
+    /**
      * Find a user by their ID
      * 
      * @param int $id
@@ -46,16 +61,23 @@ class User extends Model
     {
         // Hash the password securely before saving
         $passwordHash = password_hash($data['password'], PASSWORD_BCRYPT);
+        
+        // Auto-generate a basic username if not provided
+        if (empty($data['username'])) {
+            $baseSlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '_', $data['first_name'] . '_' . $data['last_name'])));
+            $data['username'] = $baseSlug . '_' . substr(uniqid(), -4);
+        }
 
-        $sql = "INSERT INTO users (first_name, last_name, email, password_hash, role) 
-                VALUES (:first_name, :last_name, :email, :password_hash, :role)";
+        $sql = "INSERT INTO users (first_name, last_name, email, password_hash, role, username) 
+                VALUES (:first_name, :last_name, :email, :password_hash, :role, :username)";
 
         return $this->execute($sql, [
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'email' => $data['email'],
             'password_hash' => $passwordHash,
-            'role' => $data['role'] ?? 'homeowner'
+            'role' => $data['role'] ?? 'homeowner',
+            'username' => $data['username']
         ]);
     }
 

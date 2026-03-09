@@ -32,15 +32,20 @@ class Router
     public function dispatch($uri, $method)
     {
         foreach ($this->routes as $route) {
-            // Very simple direct match routing. 
-            // In a real app we might use regex to pull dynamic {id} variables.
-            if ($route['uri'] === $uri && $route['method'] === strtoupper($method)) {
+            // Check if the route contains dynamic parameters (e.g., {username})
+            $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $route['uri']);
+            $pattern = "@^" . $pattern . "$@D";
+
+            if (preg_match($pattern, $uri, $matches) && $route['method'] === strtoupper($method)) {
+                
+                // Remove the full match from the array
+                array_shift($matches);
 
                 $action = $route['controller'];
 
                 // Handle closure routes (e.g. $router->get('/', function() { ... }))
                 if (is_callable($action)) {
-                    return call_user_func($action);
+                    return call_user_func_array($action, $matches);
                 }
 
                 // Handle Controller array syntax (e.g. [HomeController::class, 'index'])
@@ -49,7 +54,7 @@ class Router
                     $methodName = $action[1];
 
                     $controller = new $class();
-                    return call_user_func([$controller, $methodName]);
+                    return call_user_func_array([$controller, $methodName], $matches);
                 }
             }
         }

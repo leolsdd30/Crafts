@@ -62,16 +62,51 @@
                                     <input type="text" name="last_name" id="last_name" required value="<?= htmlspecialchars($user['last_name']) ?>" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-2 border">
                                 </div>
                             </div>
+
+                            <?php
+                                $canEditUsername = true;
+                                $daysRemaining = 0;
+                                if (!empty($user['username_updated_at'])) {
+                                    $lastUpdated = strtotime($user['username_updated_at']);
+                                    $daysPassed = floor((time() - $lastUpdated) / (24 * 60 * 60));
+                                    if ($daysPassed < 14) {
+                                        $canEditUsername = false;
+                                        $daysRemaining = 14 - $daysPassed;
+                                    }
+                                }
+                            ?>
+                            <div class="sm:col-span-2">
+                                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                                <div class="mt-1">
+                                    <input type="text" name="username" id="username" 
+                                        value="<?= htmlspecialchars($user['username'] ?? '') ?>" 
+                                        <?= !$canEditUsername ? 'readonly disabled' : '' ?> 
+                                        pattern="^[a-zA-Z][a-zA-Z0-9_-]{2,}$" 
+                                        title="Must start with a letter, be at least 3 characters long, and contain no spaces."
+                                        class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-2 border <?= !$canEditUsername ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200' : '' ?>">
+                                </div>
+                                <?php if (!$canEditUsername): ?>
+                                    <p class="mt-2 text-sm text-red-500 font-medium flex items-center">
+                                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        </svg>
+                                        Locked. You can change your username in <?= $daysRemaining ?> days.
+                                    </p>
+                                <?php else: ?>
+                                    <div id="username-feedback" class="mt-2 text-xs font-medium flex items-center transition-all duration-200"></div>
+                                    <p class="mt-1 text-xs text-gray-400">Must start with a letter and be at least 3 characters.</p>
+                                <?php endif; ?>
+                            </div>
                             <div>
                                 <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                                <div class="mt-1">
-                                    <input type="tel" name="phone_number" id="phone_number" value="<?= htmlspecialchars($user['phone_number'] ?? '') ?>" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-2 border" placeholder="0555 123 456">
+                                <div class="mt-1 flex items-center">
+                                    <input type="tel" name="phone_number" id="phone_number" value="<?= htmlspecialchars($user['phone_number'] ?? '') ?>" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 h-10 border" placeholder="0555 123 456">
                                 </div>
                             </div>
                             <div>
                                 <label for="wilaya" class="block text-sm font-medium text-gray-700">Location (Wilaya)</label>
-                                <div class="mt-1">
-                                    <select id="wilaya" name="wilaya" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 py-2 border bg-white">
+                                <div class="mt-1 flex items-center">
+                                    <select id="wilaya" name="wilaya" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md px-4 h-10 border bg-white">
                                         <option value="">Select your Wilaya</option>
                                         <?php 
                                             $wilayas = [
@@ -296,4 +331,122 @@
         var pEl = dropzone.querySelector('p');
         if (pEl) pEl.textContent = files.length + ' image' + (files.length > 1 ? 's' : '') + ' selected';
     }
+
+    // ─── Real-Time Username Validator ──────────────────────────────
+    (function() {
+        var input = document.getElementById('username');
+        if (!input || input.disabled) return;
+
+        var feedback = document.getElementById('username-feedback');
+        var originalValue = input.value.trim();
+        var usernameValid = true;
+        var debounceTimer = null;
+
+        input.addEventListener('input', function() {
+            var val = input.value.trim();
+            // Run local checks immediately
+            var localOk = validateLocal(val);
+            
+            // If local checks pass and value changed, check server
+            if (localOk && val !== originalValue) {
+                showLoading('Checking availability...');
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function() {
+                    checkServer(val);
+                }, 400); // 400ms debounce
+            }
+        });
+
+        // Prevent form submit if invalid
+        var form = input.closest('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                var val = input.value.trim();
+                var localOk = validateLocal(val);
+                if (!localOk || !usernameValid) {
+                    e.preventDefault();
+                    input.focus();
+                }
+            });
+        }
+
+        function validateLocal(val) {
+            // Reset
+            input.classList.remove('border-red-400', 'border-green-400', 'border-yellow-400', 'ring-1', 'ring-red-400', 'ring-green-400', 'ring-yellow-400');
+            feedback.className = 'mt-2 text-xs font-medium flex items-center transition-all duration-200';
+
+            if (val === '') {
+                showError('Username cannot be empty.');
+                return false;
+            }
+            if (val.length < 3) {
+                showError('Too short. Minimum 3 characters.');
+                return false;
+            }
+            if (/^[0-9]/.test(val)) {
+                showError('Cannot start with a number.');
+                return false;
+            }
+            if (/\s/.test(val)) {
+                showError('Spaces are not allowed.');
+                return false;
+            }
+            if (!/^[a-zA-Z][a-zA-Z0-9_-]{2,}$/.test(val)) {
+                showError('Only letters, numbers, underscores and dashes allowed.');
+                return false;
+            }
+
+            // Same as original — no change needed
+            if (val === originalValue) {
+                feedback.innerHTML = '';
+                input.classList.remove('border-red-400', 'border-green-400', 'border-yellow-400', 'ring-1', 'ring-red-400', 'ring-green-400', 'ring-yellow-400');
+                usernameValid = true;
+                return false; // no need to check server
+            }
+            return true;
+        }
+
+        function checkServer(val) {
+            fetch('<?= APP_URL ?>/profile/check-username?username=' + encodeURIComponent(val))
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    // Make sure the input hasn't changed while we were waiting
+                    if (input.value.trim() !== val) return;
+                    
+                    input.classList.remove('border-yellow-400', 'ring-yellow-400');
+                    if (data.available) {
+                        showSuccess('Username is available!');
+                        usernameValid = true;
+                    } else {
+                        showError(data.message || 'This username is already taken.');
+                        usernameValid = false;
+                    }
+                })
+                .catch(function() {
+                    // Network error — allow submission, server will re-validate
+                    showSuccess('Username looks good.');
+                    usernameValid = true;
+                });
+        }
+
+        function showError(msg) {
+            usernameValid = false;
+            input.classList.add('border-red-400', 'ring-1', 'ring-red-400');
+            feedback.classList.add('text-red-500');
+            feedback.innerHTML = '<svg class="h-3.5 w-3.5 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>' + msg;
+        }
+
+        function showSuccess(msg) {
+            input.classList.add('border-green-400', 'ring-1', 'ring-green-400');
+            feedback.classList.add('text-green-600');
+            feedback.innerHTML = '<svg class="h-3.5 w-3.5 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' + msg;
+        }
+
+        function showLoading(msg) {
+            usernameValid = false; // block submit while checking
+            input.classList.add('border-yellow-400', 'ring-1', 'ring-yellow-400');
+            feedback.classList.add('text-yellow-600');
+            feedback.innerHTML = '<svg class="animate-spin h-3.5 w-3.5 mr-1 flex-shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>' + msg;
+        }
+    })();
 </script>   

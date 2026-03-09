@@ -54,6 +54,9 @@
                         <p class="text-sm font-semibold uppercase tracking-widest text-<?= $user['role'] === 'craftsman' ? 'indigo' : 'gray' ?>-600 mt-1">
                             <?= $user['role'] === 'craftsman' ? htmlspecialchars($craftsmanDetails['service_category'] ?? 'Professional') : 'Homeowner' ?>
                         </p>
+                        <?php if (!empty($user['username'])): ?>
+                        <p class="text-sm text-gray-400 mt-0.5 font-medium">@<?= htmlspecialchars($user['username']) ?></p>
+                        <?php endif; ?>
                         <p class="text-sm text-gray-500 mt-1">Member since <?= date('Y', strtotime($user['created_at'])) ?></p>
                         <?php if (!empty($user['wilaya'])): ?>
                         <div class="mt-3 flex items-center justify-center md:justify-start text-sm text-gray-600">
