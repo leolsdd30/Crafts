@@ -15,7 +15,19 @@ class FavoriteController extends Controller
     public function toggle()
     {
         Middleware::requireLogin();
-        // Middleware::verifyCsrfToken(); // If using standard form post, but we will likely use Fetch API
+        
+        // CSRF protection for AJAX: validate Origin or Referer header
+        $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        $appHost = parse_url(APP_URL, PHP_URL_HOST);
+        $originHost = !empty($origin) ? parse_url($origin, PHP_URL_HOST) : null;
+        $refererHost = !empty($referer) ? parse_url($referer, PHP_URL_HOST) : null;
+        
+        if ($originHost !== $appHost && $refererHost !== $appHost) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Invalid request origin.']);
+            exit;
+        }
 
         // Only homeowners can favorite
         if ($_SESSION['role'] !== 'homeowner') {

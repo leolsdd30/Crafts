@@ -213,19 +213,35 @@ class ProfileController extends Controller
             $name = basename($_FILES['profile_picture']['name']);
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
-            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                $newName = time() . '_' . uniqid() . '.' . $ext;
-                $uploadDir = BASE_PATH . '/public/uploads/profile/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                }
+            // Enforce max file size (5MB)
+            $maxFileSize = 5 * 1024 * 1024;
+            if ($_FILES['profile_picture']['size'] > $maxFileSize) {
+                // File too large — silently skip (or could set an error flash)
+            }
+            elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                // Verify actual MIME type of the binary content
+                $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $detectedMime = $finfo->file($tmpName);
+                
+                // Also verify it's a real image via getimagesize
+                $imageInfo = @getimagesize($tmpName);
+                
+                if (in_array($detectedMime, $allowedMimes) && $imageInfo !== false) {
+                    $newName = time() . '_' . uniqid() . '.' . $ext;
+                    $uploadDir = BASE_PATH . '/public/uploads/profile/';
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0777, true);
+                    }
 
-                if (move_uploaded_file($tmpName, $uploadDir . $newName)) {
-                    $userModel->executeQuery("UPDATE users SET profile_picture = :pic WHERE id = :id", [
-                        'pic' => $newName,
-                        'id' => $id
-                    ]);
+                    if (move_uploaded_file($tmpName, $uploadDir . $newName)) {
+                        $userModel->executeQuery("UPDATE users SET profile_picture = :pic WHERE id = :id", [
+                            'pic' => $newName,
+                            'id' => $id
+                        ]);
+                    }
                 }
+                // If MIME/image check fails, silently skip the upload
             }
         }
 
@@ -278,9 +294,17 @@ class ProfileController extends Controller
                         $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
 
                         if (in_array($ext, $allowedExts) && $_FILES['portfolio_images']['size'][$i] <= 5 * 1024 * 1024) {
-                            $newName = time() . '_' . uniqid() . '_' . $i . '.' . $ext;
-                            if (move_uploaded_file($tmpName, $uploadDir . $newName)) {
-                                $newImages[] = $newName;
+                            // Verify actual MIME type of the binary content
+                            $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                            $detectedMime = $finfo->file($tmpName);
+                            $imageInfo = @getimagesize($tmpName);
+
+                            if (in_array($detectedMime, $allowedMimes) && $imageInfo !== false) {
+                                $newName = time() . '_' . uniqid() . '_' . $i . '.' . $ext;
+                                if (move_uploaded_file($tmpName, $uploadDir . $newName)) {
+                                    $newImages[] = $newName;
+                                }
                             }
                         }
                     }

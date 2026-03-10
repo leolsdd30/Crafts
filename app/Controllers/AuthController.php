@@ -77,6 +77,12 @@ class AuthController extends Controller
         $password = $_POST['password'] ?? '';
         $role = $_POST['role'] ?? 'homeowner';
 
+        // Allowlist: only permit valid non-admin roles
+        $allowedRoles = ['homeowner', 'craftsman'];
+        if (!in_array($role, $allowedRoles, true)) {
+            $role = 'homeowner';
+        }
+
         if (empty($firstName) || empty($lastName) || empty($email) || empty($password)) {
             $this->showRegisterForm("All fields are required.");
             return;
@@ -119,6 +125,7 @@ class AuthController extends Controller
      */
     public function logout()
     {
+        Middleware::verifyCsrfToken();
         session_unset();
         session_destroy();
 
