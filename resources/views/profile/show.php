@@ -98,7 +98,7 @@
                             </a>
                             <?php endif; ?>
                             <?php if ($user['role'] === 'craftsman'): ?>
-                            <a href="<?= APP_URL ?>/bookings/create?craftsman_id=<?= $user['id'] ?>" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                            <a href="<?= APP_URL ?>/bookings/create/<?= $user['username'] ?>" class="w-full inline-flex justify-center items-center px-4 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
                                 Request Booking
                             </a>
                             <?php endif; ?>
@@ -484,7 +484,10 @@ async function toggleFavorite(craftsmanId, btnElement) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ craftsman_id: craftsmanId })
+            body: JSON.stringify({ 
+                craftsman_id: craftsmanId,
+                csrf_token: '<?= e($_SESSION['csrf_token'] ?? '') ?>'
+            })
         });
         
         const data = await response.json();

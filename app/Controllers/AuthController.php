@@ -42,6 +42,7 @@ class AuthController extends Controller
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['name'] = $user['first_name'];
+            $_SESSION['username'] = $user['username'];
 
             // Redirect to dashboard (or home for now)
             header("Location: " . APP_URL . "/");
@@ -111,6 +112,7 @@ class AuthController extends Controller
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['name'] = $user['first_name'];
+            $_SESSION['username'] = $user['username'];
 
             header("Location: " . APP_URL . "/");
             exit;
