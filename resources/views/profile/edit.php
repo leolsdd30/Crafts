@@ -148,10 +148,10 @@
                                 </div>
                             </div>
                             <div>
-                                <label for="hourly_rate" class="block text-sm font-medium text-gray-700">Hourly Rate ($)</label>
+                                <label for="hourly_rate" class="block text-sm font-medium text-gray-700">Hourly Rate (DZD)</label>
                                 <div class="mt-1 relative rounded-md shadow-sm">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm"> $ </span>
+                                        <span class="text-gray-500 sm:text-sm"> DZD </span>
                                     </div>
                                     <input type="number" name="hourly_rate" id="hourly_rate" min="0" step="0.01" value="<?= htmlspecialchars($craftsmanDetails['hourly_rate'] ?? '0.00') ?>" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md py-2 border">
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

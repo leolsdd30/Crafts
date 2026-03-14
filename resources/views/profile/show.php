@@ -46,14 +46,21 @@
                         <h1 class="text-2xl font-extrabold text-gray-900 flex items-center justify-center md:justify-start">
                             <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>
                             <?php if ($user['role'] === 'craftsman' && !empty($craftsmanDetails['is_verified'])): ?>
-                            <svg class="ml-2 h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" title="Verified Professional">
-                                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812 3.066 3.066 0 00.723 1.745 3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            <svg class="ml-2 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" title="Verified Professional">
+                                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
                             <?php endif; ?>
                         </h1>
-                        <p class="text-sm font-semibold uppercase tracking-widest text-<?= $user['role'] === 'craftsman' ? 'indigo' : 'gray' ?>-600 mt-1">
-                            <?= $user['role'] === 'craftsman' ? htmlspecialchars($craftsmanDetails['service_category'] ?? 'Professional') : 'Homeowner' ?>
-                        </p>
+                        <?php if ($user['role'] === 'craftsman'): ?>
+                        <?php $profCatStyles = get_category_classes($craftsmanDetails['service_category'] ?? 'General Handyman'); ?>
+                        <div class="mt-1">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide <?= $profCatStyles['badge'] ?>">
+                                <?= htmlspecialchars($craftsmanDetails['service_category'] ?? 'Professional') ?>
+                            </span>
+                        </div>
+                        <?php else: ?>
+                        <p class="text-sm font-semibold uppercase tracking-widest text-gray-600 mt-1">Homeowner</p>
+                        <?php endif; ?>
                         <?php if (!empty($user['username'])): ?>
                         <p class="text-sm text-gray-400 mt-0.5 font-medium">@<?= htmlspecialchars($user['username']) ?></p>
                         <?php endif; ?>
@@ -83,7 +90,7 @@
                     <?php if ($user['role'] === 'craftsman'): ?>
                     <div class="mb-6 flex-grow text-center md:text-left">
                         <div class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-100 text-sm font-medium text-indigo-800">
-                            Hourly Rate: <span class="ml-2 font-bold text-lg text-indigo-600">$<?= number_format($craftsmanDetails['hourly_rate'] ?? 0, 2) ?></span>
+                            Hourly Rate: <span class="ml-2 font-bold text-lg text-indigo-600"><?= number_format($craftsmanDetails['hourly_rate'] ?? 0, 2) ?> DZD</span>
                         </div>
                     </div>
                     <?php endif; ?>
@@ -203,7 +210,7 @@
                             Homeowner Overview
                         </h2>
                         <div class="bg-white rounded-lg p-5 border border-gray-100 shadow-sm">
-                            <p class="text-gray-500 italic">This user is an active homeowner using CraftConnect.</p>
+                            <p class="text-gray-500 italic">This user is an active homeowner using Crafts.</p>
                         </div>
                     </div>
                     <?php endif; ?>
@@ -264,24 +271,25 @@
                         
                         <div class="flex items-center space-x-4 mb-4 mt-2">
                             <div class="relative">
-                                <img class="h-16 w-16 rounded-full object-cover border-2 <?= !empty($craftsmanDetails['is_verified']) ? 'border-green-300' : 'border-gray-200' ?> shadow-sm" 
+                                <img class="h-16 w-16 rounded-full object-cover border-2 border-gray-200 shadow-sm" 
                                      src="<?= get_profile_picture_url($user['profile_picture'] ?? 'default.png', $user['first_name'], $user['last_name']) ?>" 
                                      alt="<?= htmlspecialchars($user['first_name']) ?>">
-                                <?php if (!empty($craftsmanDetails['is_verified'])): ?>
-                                <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
-                                    <svg class="h-4 w-4 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812 3.066 3.066 0 00.723 1.745 3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <?php endif; ?>
                             </div>
                             <div>
-                                <h2 class="text-lg font-bold text-gray-900 tracking-tight">
+                                <h2 class="text-lg font-bold text-gray-900 tracking-tight flex items-center gap-1">
                                     <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>
+                                    <?php if (!empty($craftsmanDetails['is_verified'])): ?>
+                                    <svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" title="Verified Professional">
+                                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                    <?php endif; ?>
                                 </h2>
-                                <p class="text-xs font-bold uppercase tracking-wider text-indigo-600 mt-0.5">
-                                    <?= htmlspecialchars($craftsmanDetails['service_category'] ?? 'Professional') ?>
-                                </p>
+                                <div class="mt-0.5">
+                                    <?php $previewCatStyles = get_category_classes($craftsmanDetails['service_category'] ?? 'General Handyman'); ?>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider <?= $previewCatStyles['badge'] ?>">
+                                        <?= htmlspecialchars($craftsmanDetails['service_category'] ?? 'Professional') ?>
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -292,7 +300,7 @@
                         <div class="flex items-center justify-between text-sm py-3 border-t border-gray-100 bg-gray-50 -mx-6 px-6 -mb-6">
                             <div>
                                 <span class="text-gray-500 text-xs font-medium uppercase tracking-wider">Hourly Rate</span>
-                                <p class="font-bold text-gray-900 text-base">$<?= number_format($craftsmanDetails['hourly_rate'] ?? 0, 2) ?></p>
+                                <p class="font-bold text-gray-900 text-base"><?= number_format($craftsmanDetails['hourly_rate'] ?? 0, 2) ?> DZD</p>
                             </div>
                             <div class="text-right">
                                 <span class="text-gray-500 text-xs font-medium uppercase tracking-wider">Success Rating</span>

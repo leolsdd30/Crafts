@@ -1,9 +1,20 @@
+<?php
+$homeUrl = '/';
+if (defined('APP_URL')) {
+    $homeUrl = APP_URL . '/';
+} else {
+    $script = $_SERVER['SCRIPT_NAME'] ?? '';
+    if (($pos = strpos($script, '/resources/')) !== false) {
+        $homeUrl = substr($script, 0, $pos) . '/public/';
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 — Page Not Found | CraftConnect</title>
+    <title>404 — Page Not Found | Crafts</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -30,13 +41,13 @@
                 <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 Go Back
             </a>
-            <a href="/" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150 shadow-sm">
+            <a href="<?= htmlspecialchars($homeUrl) ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150 shadow-sm">
                 <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4"/></svg>
                 Back to Home
             </a>
         </div>
 
-        <p class="mt-10 text-xs text-gray-400">&copy; <?= date('Y') ?> CraftConnect. All rights reserved.</p>
+        <p class="mt-10 text-xs text-gray-400">&copy; <?= date('Y') ?> Crafts. All rights reserved.</p>
     </div>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?? 'CraftConnect' ?></title>
+    <title><?= $pageTitle ?? 'Crafts' ?></title>
     
     <!-- SEO and Open Graph Meta Tags -->
     <?php
@@ -14,11 +14,11 @@
         $absoluteAppUrl = (strpos(APP_URL ?? '', 'http') === 0) ? APP_URL : $baseUrl . APP_URL;
         $currentUrl = $baseUrl . $_SERVER['REQUEST_URI'];
 
-        $defaultDesc = 'CraftConnect - The premier platform connecting skilled craftsmen and homeowners in Algeria.';
+        $defaultDesc = 'Crafts — The premier platform connecting skilled craftsmen and homeowners in Algeria.';
         $defaultImg = APP_URL . '/assets/img/og-preview.jpg';
         
         $desc = $metaDescription ?? $ogDescription ?? $defaultDesc;
-        $title = $ogTitle ?? $pageTitle ?? 'CraftConnect';
+        $title = $ogTitle ?? $pageTitle ?? 'Crafts';
         
         // Ensure image is absolute
         $img = $ogImage ?? $defaultImg;
@@ -94,7 +94,7 @@
         $isNotifs = strpos($route, '/notifications') === 0;
 
         $baseNavClass = "text-sm font-medium transition-colors duration-200 border-b-2 border-transparent";
-        $activeNavClass = "text-indigo-600 hover:border-indigo-300";
+        $activeNavClass = "text-gray-900 border-gray-900";
         $inactiveNavClass = "text-gray-500 hover:border-gray-300 hover:text-gray-700";
         
         $baseIconClass = "relative p-2 transition-colors duration-200 rounded-lg";
@@ -106,7 +106,14 @@
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <a href="<?= APP_URL ?>/" class="text-2xl font-bold text-indigo-600">CraftConnect</a>
+                         <a href="<?= APP_URL ?>/" class="flex items-center space-x-2.5 group">
+                            <div class="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-indigo-700 transition-colors duration-200">
+                                <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                                </svg>
+                            </div>
+                            <span class="text-xl font-extrabold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">Crafts</span>
+                        </a>
                     </div>
                     <!-- Main Navigation Links -->
                     <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-8">
@@ -148,12 +155,12 @@
                             $headerNotifCount = $headerNotifModel->getUnreadCount($_SESSION['user_id']);
                         ?>
                         <?php if ($_SESSION['role'] !== 'admin'): ?>
-                        <a href="<?= $dashboardUrl ?>" class="text-sm font-medium transition-colors duration-200 border-b-2 border-transparent <?= $isDashboard ? 'text-indigo-600 hover:border-indigo-300' : 'text-gray-500 hover:text-gray-900 hover:border-gray-300' ?>">
+                        <a href="<?= $dashboardUrl ?>" class="text-sm font-medium transition-colors duration-200 border-b-2 border-transparent <?= $isDashboard ? 'text-gray-900 border-gray-900' : 'text-gray-500 hover:text-gray-900 hover:border-gray-300' ?>">
                             Dashboard
                         </a>
                         <?php endif; ?>
                         <?php if ($_SESSION['role'] === 'admin'): ?>
-                        <a href="<?= APP_URL ?>/admin/dashboard" class="text-sm font-medium transition-colors duration-200 flex items-center border-b-2 border-transparent <?= $isDashboard ? 'text-red-600 hover:border-red-300' : 'text-gray-500 hover:text-red-600 hover:border-gray-300' ?>">
+                        <a href="<?= APP_URL ?>/admin/dashboard" class="text-sm font-medium transition-colors duration-200 flex items-center border-b-2 border-transparent <?= $isDashboard ? 'text-gray-900 border-gray-900' : 'text-gray-500 hover:text-gray-900 hover:border-gray-300' ?>">
                             <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
@@ -187,7 +194,14 @@
                             <?php if ($headerPicUrl): ?>
                                 <img src="<?= $headerPicUrl ?>" alt="Profile" class="w-8 h-8 rounded-full object-cover border border-gray-200">
                             <?php endif; ?>
-                            <span class="text-sm font-semibold text-gray-700"><?= htmlspecialchars($_SESSION['name']) ?></span>
+                            <span class="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                                <?= htmlspecialchars($_SESSION['name']) ?>
+                                <?php if (!empty($_SESSION['is_verified'])): ?>
+                                <svg class="h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" title="Verified Professional">
+                                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                                <?php endif; ?>
+                            </span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $_SESSION['role'] === 'craftsman' ? 'bg-indigo-100 text-indigo-800' : 'bg-green-100 text-green-800' ?> capitalize">
                                 <?= htmlspecialchars($_SESSION['role']) ?>
                             </span>
@@ -213,8 +227,39 @@
 
     <!-- Footer -->
     <footer class="bg-white border-t border-gray-200 mt-auto">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <p class="text-center text-sm text-gray-500">&copy; <?= date('Y') ?> CraftConnect. All rights reserved.</p>
+        <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div class="col-span-2 md:col-span-1">
+                    <a href="<?= APP_URL ?>/" class="flex items-center space-x-2.5 group w-fit">
+                        <div class="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-indigo-700 transition-colors duration-200">
+                            <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                            </svg>
+                        </div>
+                        <span class="text-xl font-extrabold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">Crafts</span>
+                    </a>
+                    <p class="mt-4 text-sm text-gray-500">Connecting skilled craftsmen with homeowners across Algeria.</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-3">Platform</h3>
+                    <ul class="space-y-2">
+                        <li><a href="<?= APP_URL ?>/search" class="text-sm text-gray-500 hover:text-gray-900">Find Craftsmen</a></li>
+                        <li><a href="<?= APP_URL ?>/jobs" class="text-sm text-gray-500 hover:text-gray-900">Job Board</a></li>
+                        <li><a href="<?= APP_URL ?>/register" class="text-sm text-gray-500 hover:text-gray-900">Sign Up</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-3">Company</h3>
+                    <ul class="space-y-2">
+                        <li><a href="<?= APP_URL ?>/about" class="text-sm text-gray-500 hover:text-gray-900">About Us</a></li>
+                        <li><a href="#" class="text-sm text-gray-500 hover:text-gray-900">Contact</a></li>
+                        <li><a href="#" class="text-sm text-gray-500 hover:text-gray-900">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-100 pt-6">
+                <p class="text-center text-sm text-gray-400">&copy; <?= date('Y') ?> Crafts. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 </body>

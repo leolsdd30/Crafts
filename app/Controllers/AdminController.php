@@ -40,7 +40,7 @@ class AdminController extends Controller
         $recentUsers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->view('layouts/app', [
-            'pageTitle' => 'Admin Dashboard - CraftConnect',
+            'pageTitle' => 'Admin Dashboard - Crafts',
             'contentView' => 'admin/dashboard',
             'stats' => $stats,
             'recentUsers' => $recentUsers
@@ -198,7 +198,7 @@ class AdminController extends Controller
         $notif = new Notification();
         if ($newStatus) {
             $notif->send($userId, 'booking_accepted', 'Profile Verified!', 
-                'Congratulations! Your profile has been verified by CraftConnect. You now have a verified badge!', 
+                'Congratulations! Your profile has been verified by Crafts. You now have a verified badge!', 
                 APP_URL . '/profile/' . $userId);
         } else {
             $notif->send($userId, 'booking_declined', 'Verification Removed', 

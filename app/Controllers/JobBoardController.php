@@ -27,13 +27,13 @@ class JobBoardController extends Controller
         $jobs = $jobModel->getOpenJobs($filters);
 
         $this->view('layouts/app', [
-            'pageTitle' => 'Browse Jobs - CraftConnect',
+            'pageTitle' => 'Browse Jobs - Crafts',
             'contentView' => 'jobboard/index',
             'jobs' => $jobs,
             'filters' => $filters,
-            'metaDescription' => 'Browse available jobs and projects posted by homeowners on CraftConnect. Find your next gig today.',
-            'ogTitle' => 'Browse Jobs on CraftConnect',
-            'ogDescription' => 'Browse available jobs and projects posted by homeowners on CraftConnect. Find your next gig today.'
+            'metaDescription' => 'Browse available jobs and projects posted by homeowners on Crafts. Find your next gig today.',
+            'ogTitle' => 'Browse Jobs on Crafts',
+            'ogDescription' => 'Browse available jobs and projects posted by homeowners on Crafts. Find your next gig today.'
         ]);
     }
 
@@ -46,7 +46,7 @@ class JobBoardController extends Controller
         Middleware::requireLogin();
 
         $this->view('layouts/app', [
-            'pageTitle' => 'Post a Job - CraftConnect',
+            'pageTitle' => 'Post a Job - Crafts',
             'contentView' => 'jobboard/create'
         ]);
     }
@@ -69,7 +69,7 @@ class JobBoardController extends Controller
         if (empty($title) || empty($category) || empty($description) || empty($address)) {
             // Re-render the form with an error (in a real app, you'd flash session data)
             $this->view('layouts/app', [
-                'pageTitle' => 'Post a Job - CraftConnect',
+                'pageTitle' => 'Post a Job - Crafts',
                 'contentView' => 'jobboard/create',
                 'error' => 'Please fill in all required fields.'
             ]);
@@ -94,7 +94,7 @@ class JobBoardController extends Controller
         }
         else {
             $this->view('layouts/app', [
-                'pageTitle' => 'Post a Job - CraftConnect',
+                'pageTitle' => 'Post a Job - Crafts',
                 'contentView' => 'jobboard/create',
                 'error' => 'Failed to post the job. Please try again.'
             ]);
@@ -141,13 +141,13 @@ class JobBoardController extends Controller
             $alreadyQuoted = $quoteModel->hasAlreadyQuoted($id, $_SESSION['user_id']);
         }
 
-        $ogTitle = htmlspecialchars($job['title']) . ' - CraftConnect Job Board';
+        $ogTitle = htmlspecialchars($job['title']) . ' - Crafts Job Board';
         $metaDesc = "View the job '{$job['title']}' in the {$job['service_category']} category. " . 
                     ($job['budget_range'] ? "Budget: {$job['budget_range']} DZD. " : "") . 
-                    "Location: {$job['address']}. Apply now on CraftConnect.";
+                    "Location: {$job['address']}. Apply now on Crafts.";
 
         $this->view('layouts/app', [
-            'pageTitle' => $job['title'] . ' - CraftConnect',
+            'pageTitle' => $job['title'] . ' - Crafts',
             'contentView' => 'jobboard/show',
             'job' => $job,
             'quotes' => $quotes,

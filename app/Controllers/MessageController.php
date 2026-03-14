@@ -24,7 +24,7 @@ class MessageController extends Controller
         $requestCount = $messageModel->getPendingRequestCount($userId);
 
         $this->view('layouts/app', [
-            'pageTitle' => 'Messages - CraftConnect',
+            'pageTitle' => 'Messages - Crafts',
             'contentView' => 'messages/inbox',
             'conversations' => $conversations,
             'requests' => $requests,
@@ -54,6 +54,15 @@ class MessageController extends Controller
         if (!$otherUser) {
             $this->redirect(APP_URL . '/messages');
             return;
+        }
+
+        if ($otherUser['role'] === 'craftsman') {
+            $db = \App\Database\Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT is_verified FROM craftsmen_profiles WHERE user_id = :uid");
+            $stmt->execute(['uid' => $otherUserId]);
+            $otherUser['is_verified'] = $stmt->fetchColumn() ? true : false;
+        } else {
+            $otherUser['is_verified'] = false;
         }
 
         $messageModel = new Message();
@@ -97,7 +106,7 @@ class MessageController extends Controller
         $requestCount = $messageModel->getPendingRequestCount($userId);
 
         $this->view('layouts/app', [
-            'pageTitle' => 'Chat with ' . $otherUser['first_name'] . ' - CraftConnect',
+            'pageTitle' => 'Chat with ' . $otherUser['first_name'] . ' - Crafts',
             'contentView' => 'messages/conversation',
             'otherUser' => $otherUser,
             'messages' => $messages,
@@ -275,9 +284,10 @@ class MessageController extends Controller
 
         // Get new messages
         $db = \App\Database\Database::getInstance()->getConnection();
-        $sql = "SELECT m.*, u.first_name, u.last_name, u.profile_picture
+        $sql = "SELECT m.*, u.first_name, u.last_name, u.profile_picture, cp.is_verified
                 FROM messages m
                 JOIN users u ON u.id = m.sender_id
+                LEFT JOIN craftsmen_profiles cp ON u.id = cp.user_id
                 WHERE m.conversation_id = :cid AND m.id > :last_id
                 ORDER BY m.created_at ASC";
         $stmt = $db->prepare($sql);

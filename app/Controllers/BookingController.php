@@ -37,7 +37,7 @@ class BookingController extends Controller
         }
 
         $this->view('layouts/app', [
-            'pageTitle' => 'Request Booking - CraftConnect',
+            'pageTitle' => 'Request Booking - Crafts',
             'contentView' => 'bookings/create',
             'craftsman' => $craftsman
         ]);
@@ -62,7 +62,7 @@ class BookingController extends Controller
             $craftsman = $userModel->findById($craftsmanId);
 
             $this->view('layouts/app', [
-                'pageTitle' => 'Request Booking - CraftConnect',
+                'pageTitle' => 'Request Booking - Crafts',
                 'contentView' => 'bookings/create',
                 'craftsman' => $craftsman,
                 'error' => 'Please fill in all required fields.'
@@ -80,11 +80,8 @@ class BookingController extends Controller
         ]);
 
         if ($success) {
-            $notif = new Notification();
-            $notif->send($craftsmanId, 'booking_new', 'New Booking Request', 
-                $_SESSION['name'] . ' has requested a booking with you.', 
-                APP_URL . '/craftsman/dashboard#bookings');
-
+            $userModel = new User();
+            $craftsman = $userModel->findById($craftsmanId);
             $dashboard = $_SESSION['role'] === 'craftsman' ? '/craftsman/dashboard#bookings' : '/homeowner/dashboard#bookings';
             header("Location: " . APP_URL . $dashboard . "?success=booking_requested");
             exit;
@@ -93,7 +90,7 @@ class BookingController extends Controller
             $craftsman = $userModel->findById($craftsmanId);
 
             $this->view('layouts/app', [
-                'pageTitle' => 'Request Booking - CraftConnect',
+                'pageTitle' => 'Request Booking - Crafts',
                 'contentView' => 'bookings/create',
                 'craftsman' => $craftsman,
                 'error' => 'Failed to submit booking request. Please try again.'

@@ -12,6 +12,11 @@ class AuthController extends Controller
      */
     public function showLoginForm($error = null)
     {
+        if (isset($_SESSION['user_id'])) {
+            header("Location: " . APP_URL . "/profile");
+            exit;
+        }
+
         $this->view('layouts/app', [
             'pageTitle' => 'Sign In - CraftConnect',
             'contentView' => 'auth/login',
@@ -44,8 +49,25 @@ class AuthController extends Controller
             $_SESSION['name'] = $user['first_name'];
             $_SESSION['username'] = $user['username'];
 
-            // Redirect to dashboard (or home for now)
-            header("Location: " . APP_URL . "/");
+            // Fetch is_verified for craftsman
+            if ($user['role'] === 'craftsman') {
+                $db = \App\Database\Database::getInstance()->getConnection();
+                $stmt = $db->prepare("SELECT is_verified FROM craftsmen_profiles WHERE user_id = :uid");
+                $stmt->execute(['uid' => $user['id']]);
+                $result = $stmt->fetchColumn();
+                $_SESSION['is_verified'] = $result ? true : false;
+            } else {
+                $_SESSION['is_verified'] = false;
+            }
+
+            // Redirect to role-based dashboard
+            if ($user['role'] === 'craftsman') {
+                header("Location: " . APP_URL . "/craftsman/dashboard");
+            } elseif ($user['role'] === 'homeowner') {
+                header("Location: " . APP_URL . "/homeowner/dashboard");
+            } else {
+                header("Location: " . APP_URL . "/");
+            }
             exit;
         }
         else {
@@ -58,6 +80,11 @@ class AuthController extends Controller
      */
     public function showRegisterForm($error = null)
     {
+        if (isset($_SESSION['user_id'])) {
+            header("Location: " . APP_URL . "/profile");
+            exit;
+        }
+
         $this->view('layouts/app', [
             'pageTitle' => 'Create Account - CraftConnect',
             'contentView' => 'auth/register',
@@ -78,14 +105,15 @@ class AuthController extends Controller
         $password = $_POST['password'] ?? '';
         $role = $_POST['role'] ?? 'homeowner';
 
-        // Allowlist: only permit valid non-admin roles
-        $allowedRoles = ['homeowner', 'craftsman'];
-        if (!in_array($role, $allowedRoles, true)) {
-            $role = 'homeowner';
-        }
+        $passwordConfirm = $_POST['password_confirm'] ?? '';
 
         if (empty($firstName) || empty($lastName) || empty($email) || empty($password)) {
             $this->showRegisterForm("All fields are required.");
+            return;
+        }
+
+        if ($password !== $passwordConfirm) {
+            $this->showRegisterForm("Passwords do not match.");
             return;
         }
 
@@ -114,7 +142,14 @@ class AuthController extends Controller
             $_SESSION['name'] = $user['first_name'];
             $_SESSION['username'] = $user['username'];
 
-            header("Location: " . APP_URL . "/");
+            // Redirect new user to their dashboard
+            if ($user['role'] === 'craftsman') {
+                header("Location: " . APP_URL . "/craftsman/dashboard");
+            } elseif ($user['role'] === 'homeowner') {
+                header("Location: " . APP_URL . "/homeowner/dashboard");
+            } else {
+                header("Location: " . APP_URL . "/");
+            }
             exit;
         }
         else {
@@ -127,7 +162,6 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        Middleware::verifyCsrfToken();
         session_unset();
         session_destroy();
 
