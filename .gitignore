@@ -1,0 +1,34 @@
+# Critical Secrets
+.env
+.env.*
+!.env.example
+/config/database.php
+
+# Large Folders (re-downloadable)
+/vendor/
+/node_modules/
+
+# User-uploaded content
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# System Logs & Cache
+/storage/*.log
+/storage/cache/
+
+# Database Dumps
+*.sql
+
+# Build Artifacts
+npm-debug.log
+yarn-error.log
+
+# IDE & OS Files
+.DS_Store
+/.idea
+/.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
