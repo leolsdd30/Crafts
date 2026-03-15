@@ -14,6 +14,7 @@ use App\Controllers\FavoriteController;
 use App\Controllers\NotificationController;
 use App\Controllers\AdminController;
 use App\Controllers\MessageController;
+use App\Controllers\PasswordResetController;
 
 /**
  * Register all web routes here.
@@ -44,6 +45,12 @@ $router->post('/login', [AuthController::class , 'processLogin']);
 $router->get('/register', [AuthController::class , 'showRegisterForm']);
 $router->post('/register', [AuthController::class , 'processRegister']);
 $router->post('/logout', [AuthController::class , 'logout']);
+
+// Password Reset Routes
+$router->get('/forgot-password', [PasswordResetController::class , 'showForgotForm']);
+$router->post('/forgot-password', [PasswordResetController::class , 'sendResetLink']);
+$router->get('/reset-password', [PasswordResetController::class , 'showResetForm']);
+$router->post('/reset-password', [PasswordResetController::class , 'processReset']);
 
 // Role-based Dashboards
 $router->get('/homeowner/dashboard', [HomeownerController::class , 'dashboard']);

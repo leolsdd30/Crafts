@@ -555,7 +555,9 @@ $slideshowUrls = array_map(fn($p) => [
 =================================================================== -->
 <?php if (!isset($_SESSION['user_id'])): ?>
     <!-- Logged Out CTA (Split tabbed) -->
-    <div class="bg-gray-900 py-16 px-4 sm:px-6 lg:px-8">
+    <div class="bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-gray-900 rounded-2xl py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div class="max-w-3xl mx-auto text-center">
 
             <h2 class="text-3xl font-extrabold text-white sm:text-4xl">Ready to get started?</h2>
@@ -579,6 +581,7 @@ $slideshowUrls = array_map(fn($p) => [
                     </svg>
                     For Craftsmen
                 </button>
+            </div>
             </div>
 
             <!-- Homeowners Panel -->

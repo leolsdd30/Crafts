@@ -1,4 +1,4 @@
-<!-- Login Page -->
+<!-- Forgot Password Page -->
 <div class="min-h-[calc(100vh-4rem)] bg-gray-50 flex">
 
     <!-- Left Panel — Branding -->
@@ -22,16 +22,19 @@
             </a>
         </div>
 
-        <!-- Center quote -->
+        <!-- Center content -->
         <div class="relative z-10">
-            <blockquote class="text-white">
-                <p class="text-3xl font-bold leading-snug mb-6">
-                    "Connecting skilled hands<br>with homes that need them."
-                </p>
-                <p class="text-indigo-200 text-base">
-                    Thousands of verified craftsmen ready to help with your next project — plumbing, electrical, carpentry, and more.
-                </p>
-            </blockquote>
+            <div class="h-16 w-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mb-6">
+                <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-white leading-snug mb-4">
+                Forgot your<br>password?
+            </h2>
+            <p class="text-indigo-200 text-base leading-relaxed">
+                No worries — it happens. Enter your email and we'll send you a secure link to reset it right away.
+            </p>
         </div>
 
         <!-- Stat badges -->
@@ -55,17 +58,7 @@
 
     <!-- Right Panel — Form -->
     <div class="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 sm:px-12">
-        
         <div class="w-full max-w-md">
-
-            <?php if (($_GET['success'] ?? '') === 'password_reset'): ?>
-<div class="mb-6 flex items-start space-x-3 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-    <svg class="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-    </svg>
-    <span>Password updated successfully. You can now sign in with your new password.</span>
-</div>
-<?php endif; ?>
 
             <!-- Mobile logo -->
             <div class="flex justify-center mb-8 lg:hidden">
@@ -79,13 +72,51 @@
                 </a>
             </div>
 
-            <div class="mb-8">
-                <h1 class="text-3xl font-extrabold text-gray-900">Welcome back</h1>
-                <p class="mt-2 text-sm text-gray-500">
-                    Don't have an account?
-                    <a href="<?= APP_URL ?>/register" class="font-semibold text-indigo-600 hover:text-indigo-500 transition">
-                        Sign up for free
+            <?php if (!empty($submitted)): ?>
+            <!-- ── SUCCESS STATE ────────────────────────────────────── -->
+            <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                    <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Check your email</h1>
+                <p class="text-sm text-gray-500 mb-8">
+                    If that email address is registered with Crafts, a password reset link has been sent to it.
+                </p>
+
+                <?php if (!empty($mockResetUrl)): ?>
+                <!-- MOCK BLOCK — remove once Resend is wired up -->
+                <div class="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-5 text-left">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <svg class="h-5 w-5 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p class="text-xs font-bold text-amber-700 uppercase tracking-wide">Development Mode</p>
+                    </div>
+                    <p class="text-xs text-amber-700 mb-3">No email was sent. In production this link would arrive in the user's inbox. Click it to test the reset flow:</p>
+                    <a href="<?= e($mockResetUrl) ?>"
+                       class="block w-full text-center px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg transition duration-150">
+                        Open Reset Link →
                     </a>
+                </div>
+                <?php endif; ?>
+
+                <a href="<?= APP_URL ?>/login"
+                   class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500 transition">
+                    <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Back to Sign In
+                </a>
+            </div>
+
+            <?php else: ?>
+            <!-- ── FORM STATE ───────────────────────────────────────── -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-extrabold text-gray-900">Forgot password?</h1>
+                <p class="mt-2 text-sm text-gray-500">
+                    Enter your email and we'll send you a reset link.
                 </p>
             </div>
 
@@ -94,77 +125,39 @@
                 <svg class="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span><?= htmlspecialchars($error) ?></span>
+                <span><?= e($error) ?></span>
             </div>
             <?php endif; ?>
 
-            <form action="<?= APP_URL ?>/login" method="POST" class="space-y-5">
+            <form action="<?= APP_URL ?>/forgot-password" method="POST" class="space-y-5">
                 <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
 
-                <!-- Email -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email address</label>
                     <input id="email" name="email" type="email" autocomplete="email" required
                         class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400
                                focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                        placeholder="you@example.com">
+                        placeholder="you@example.com"
+                        value="<?= e($_POST['email'] ?? '') ?>">
                 </div>
 
-                <!-- Password -->
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <div class="relative">
-                        <input id="password" name="password" type="password" autocomplete="current-password" required
-                            class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition pr-11"
-                            placeholder="••••••••">
-                        <button type="button" onclick="togglePassword('password', this)"
-                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 transition">
-                            <svg class="h-4 w-4 eye-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Forgot Password Link -->
-<div class="flex justify-end -mt-1">
-    <a href="<?= APP_URL ?>/forgot-password"
-       class="text-xs font-medium text-indigo-600 hover:text-indigo-500 transition">
-        Forgot your password?
-    </a>
-</div>
-                <!-- Submit -->
                 <button type="submit"
                     class="w-full flex justify-center items-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Sign in
+                    Send Reset Link
                     <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                     </svg>
                 </button>
             </form>
 
-            <p class="mt-8 text-center text-xs text-gray-400">
-                By signing in you agree to our
-                <a href="#" class="underline hover:text-gray-600">Terms of Service</a>
-                and
-                <a href="#" class="underline hover:text-gray-600">Privacy Policy</a>.
+            <p class="mt-8 text-center text-sm text-gray-500">
+                Remembered it?
+                <a href="<?= APP_URL ?>/login" class="font-semibold text-indigo-600 hover:text-indigo-500 transition">
+                    Back to Sign In
+                </a>
             </p>
+            <?php endif; ?>
+
         </div>
     </div>
 </div>
-
-<script>
-function togglePassword(fieldId, btn) {
-    var input = document.getElementById(fieldId);
-    var icon = btn.querySelector('.eye-icon');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 4.411m0 0L21 21"/>';
-    } else {
-        input.type = 'password';
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
-    }
-}
-</script>
