@@ -5,7 +5,7 @@
         <!-- Welcome Header -->
         <div class="mb-8">
             <h1 class="text-3xl font-extrabold text-gray-900">
-                Welcome back, <?= htmlspecialchars($_SESSION['first_name'] ?? 'Homeowner') ?>!
+                Welcome back, <?= htmlspecialchars($_SESSION['name'] ?? 'Homeowner') ?>!
             </h1>
             <p class="mt-1 text-sm text-gray-500">Here's an overview of your activity on Crafts.</p>
         </div>
@@ -73,44 +73,224 @@
                 </nav>
 
                 <!-- Sidebar Action Buttons -->
-                <div class="mt-4 space-y-2">
+                <div class="mt-4 pt-4 border-t border-gray-100">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1 mb-2">Quick Actions</p>
+        <div class="space-y-2">
                     <a href="<?= APP_URL ?>/jobs/create" class="flex items-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition">
                         <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Post a New Job
                     </a>
                     <a href="<?= APP_URL ?>/search" class="flex items-center w-full px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 rounded-lg shadow-sm transition">
                         <svg class="mr-2 h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Find Craftsmen
                     </a>
+                    </div>
                 </div>
             </aside>
 
             <!-- Main Content Area -->
             <div class="flex-1 min-w-0">
 
-                <!-- Tab: Overview -->
-                <div id="tab-overview" class="tab-content" style="display:none">
-                    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-8">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col justify-between">
-                            <svg class="h-6 w-6 text-indigo-500 mb-3 bg-indigo-50 rounded p-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                            <p class="text-xs font-semibold text-gray-500 uppercase">Active Jobs</p>
-                            <p class="text-2xl font-bold text-gray-900"><?= $activeJobsCount ?></p>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col justify-between">
-                            <svg class="h-6 w-6 text-yellow-500 mb-3 bg-yellow-50 rounded p-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                            <p class="text-xs font-semibold text-gray-500 uppercase">Quotes</p>
-                            <p class="text-2xl font-bold text-gray-900"><?= $pendingQuotesCount ?></p>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col justify-between">
-                            <svg class="h-6 w-6 text-green-500 mb-3 bg-green-50 rounded p-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <p class="text-xs font-semibold text-gray-500 uppercase">Completed</p>
-                            <p class="text-2xl font-bold text-gray-900"><?= $completedJobsCount ?></p>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col justify-between">
-                            <svg class="h-6 w-6 text-pink-500 mb-3 bg-pink-50 rounded p-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                            <p class="text-xs font-semibold text-gray-500 uppercase">Saved Pros</p>
-                            <p class="text-2xl font-bold text-gray-900"><?= count($favorites) ?></p>
-                        </div>
+               <!-- Tab: Overview -->
+<div id="tab-overview" class="tab-content" style="display:none">
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
+
+        <!-- Active Jobs -->
+        <div class="bg-white rounded-xl shadow-sm border-t-4 border-indigo-400 border-x border-b border-gray-100 p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">My Jobs</span>
+                <div class="h-8 w-8 bg-indigo-50 rounded-lg flex items-center justify-center">
+                    <svg class="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </div>
+            </div>
+            <p class="text-2xl font-extrabold text-gray-900"><?= $activeJobsCount ?></p>
+            <p class="text-xs text-gray-400 mt-1"><?= $completedJobsCount ?> completed</p>
+        </div>
+
+        <!-- Pending Quotes -->
+        <div class="bg-white rounded-xl shadow-sm border-t-4 border-yellow-400 border-x border-b border-gray-100 p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Quotes</span>
+                <div class="h-8 w-8 bg-yellow-50 rounded-lg flex items-center justify-center">
+                    <svg class="h-4 w-4 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                </div>
+            </div>
+            <p class="text-2xl font-extrabold text-gray-900"><?= $pendingQuotesCount ?></p>
+            <p class="text-xs text-gray-400 mt-1">Awaiting your review</p>
+        </div>
+
+        <!-- Bookings -->
+        <div class="bg-white rounded-xl shadow-sm border-t-4 border-sky-400 border-x border-b border-gray-100 p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Bookings</span>
+                <div class="h-8 w-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <svg class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+            </div>
+            <p class="text-2xl font-extrabold text-gray-900"><?= count($bookings) ?></p>
+            <?php
+                $activeBookingsCount = count(array_filter($bookings, fn($b) => in_array($b['status'], ['requested','in_progress','counter_offered'])));
+            ?>
+            <p class="text-xs text-gray-400 mt-1"><?= $activeBookingsCount ?> in progress</p>
+        </div>
+
+        <!-- Saved Craftsmen -->
+        <div class="bg-white rounded-xl shadow-sm border-t-4 border-pink-400 border-x border-b border-gray-100 p-5 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Saved</span>
+                <div class="h-8 w-8 bg-pink-50 rounded-lg flex items-center justify-center">
+                    <svg class="h-4 w-4 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                </div>
+            </div>
+            <p class="text-2xl font-extrabold text-gray-900"><?= count($favorites) ?></p>
+            <p class="text-xs text-gray-400 mt-1">Saved professionals</p>
+        </div>
+
+    </div>
+
+    <!-- Bottom: Smart Card + Recent Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Smart Contextual Card -->
+        <?php if (empty($jobs)): ?>
+        <!-- No jobs posted yet -->
+        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center mb-3">
+                    <div class="h-9 w-9 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </div>
+                    <h3 class="font-bold text-indigo-900">Post your first job</h3>
+                </div>
+                <p class="text-sm text-indigo-700 leading-relaxed">Describe what you need done and receive quotes from verified craftsmen in your area. It only takes a minute.</p>
+            </div>
+            <a href="<?= APP_URL ?>/jobs/create" class="mt-4 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition">
+                Post a Job →
+            </a>
+        </div>
+
+        <?php elseif ($pendingQuotesCount > 0): ?>
+        <!-- Has pending quotes -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center mb-3">
+                    <div class="h-9 w-9 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    </div>
+                    <h3 class="font-bold text-yellow-900"><?= $pendingQuotesCount ?> quote<?= $pendingQuotesCount !== 1 ? 's' : '' ?> waiting</h3>
+                </div>
+                <p class="text-sm text-yellow-700 leading-relaxed">Craftsmen have submitted quotes on your jobs. Review them and hire the best one.</p>
+            </div>
+            <button onclick="switchTab('quotes')" class="mt-4 inline-flex items-center justify-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold rounded-lg transition">
+                Review Quotes →
+            </button>
+        </div>
+
+        <?php elseif ($activeBookingsCount > 0): ?>
+        <!-- Has active bookings -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center mb-3">
+                    <div class="h-9 w-9 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3 class="font-bold text-blue-900"><?= $activeBookingsCount ?> job<?= $activeBookingsCount !== 1 ? 's' : '' ?> in progress</h3>
+                </div>
+                <p class="text-sm text-blue-700 leading-relaxed">Your craftsmen are working on your projects. Track progress and confirm completion when done.</p>
+            </div>
+            <button onclick="switchTab('bookings')" class="mt-4 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">
+                View Bookings →
+            </button>
+        </div>
+
+        <?php else: ?>
+        <!-- All good -->
+        <div class="bg-green-50 border border-green-200 rounded-xl p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center mb-3">
+                    <div class="h-9 w-9 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <h3 class="font-bold text-green-900">Find your next professional</h3>
+                </div>
+                <p class="text-sm text-green-700 leading-relaxed">Browse verified craftsmen by category and location. Read reviews, compare rates, and book directly.</p>
+            </div>
+            <a href="<?= APP_URL ?>/search" class="mt-4 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition">
+                Find Craftsmen →
+            </a>
+        </div>
+        <?php endif; ?>
+
+        <!-- Recent Activity Feed -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Recent Activity</h3>
+
+            <?php
+                $activities = [];
+
+                // Recent bookings
+                foreach (array_slice($bookings, 0, 3) as $b) {
+                    $craftsmanName = htmlspecialchars($b['first_name'] ?? 'Craftsman');
+                    $label = match($b['status']) {
+                        'requested'         => ['text' => 'Booking sent to ' . $craftsmanName, 'color' => 'bg-blue-100 text-blue-600', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
+                        'in_progress'       => ['text' => 'Job in progress with ' . $craftsmanName, 'color' => 'bg-indigo-100 text-indigo-600', 'icon' => 'M13 10V3L4 14h7v7l9-11h-7z'],
+                        'counter_offered'   => ['text' => $craftsmanName . ' sent a counter-offer', 'color' => 'bg-yellow-100 text-yellow-600', 'icon' => 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z'],
+                        'completed'         => ['text' => 'Job completed with ' . $craftsmanName, 'color' => 'bg-green-100 text-green-600', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+                        'pending_completion'=> ['text' => $craftsmanName . ' marked job as complete', 'color' => 'bg-purple-100 text-purple-600', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+                        default             => ['text' => 'Booking updated', 'color' => 'bg-gray-100 text-gray-500', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
+                    };
+                    $activities[] = ['label' => $label, 'time' => $b['created_at'] ?? ''];
+                }
+
+                // Recent jobs posted
+                foreach (array_slice($jobs, 0, 2) as $j) {
+                    $activities[] = [
+                        'label' => ['text' => 'Job posted: ' . htmlspecialchars($j['title']), 'color' => 'bg-indigo-100 text-indigo-600', 'icon' => 'M12 4v16m8-8H4'],
+                        'time'  => $j['created_at'] ?? ''
+                    ];
+                }
+
+                usort($activities, fn($a, $b) => strtotime($b['time']) - strtotime($a['time']));
+                $activities = array_slice($activities, 0, 5);
+            ?>
+
+            <?php if (empty($activities)): ?>
+            <div class="text-center py-8">
+                <svg class="mx-auto h-10 w-10 text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p class="text-sm text-gray-400">No activity yet. Post a job to get started!</p>
+            </div>
+            <?php else: ?>
+            <div class="space-y-3">
+                <?php foreach ($activities as $activity): ?>
+                <div class="flex items-start gap-3">
+                    <div class="h-8 w-8 <?= $activity['label']['color'] ?> rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="<?= $activity['label']['icon'] ?>"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-gray-700 leading-snug"><?= $activity['label']['text'] ?></p>
+                        <?php if (!empty($activity['time'])): ?>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            <?php
+                                $diff = time() - strtotime($activity['time']);
+                                if ($diff < 3600) echo floor($diff / 60) . 'm ago';
+                                elseif ($diff < 86400) echo floor($diff / 3600) . 'h ago';
+                                elseif ($diff < 604800) echo floor($diff / 86400) . 'd ago';
+                                else echo date('M d', strtotime($activity['time']));
+                            ?>
+                        </p>
+                        <?php endif; ?>
                     </div>
                 </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+
+    </div><!-- end bottom grid -->
+</div><!-- end tab-overview -->
+
 
                 <!-- Tab: My Jobs -->
                 <div id="tab-jobs" class="tab-content" style="display:none">

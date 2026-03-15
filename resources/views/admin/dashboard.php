@@ -199,35 +199,75 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <?php foreach ($recentUsers as $u): ?>
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900"><?= htmlspecialchars($u['first_name'] . ' ' . $u['last_name']) ?></span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= htmlspecialchars($u['email']) ?></td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <?php
-                                    $roleColors = [
-                                        'admin' => 'bg-red-100 text-red-800',
-                                        'craftsman' => 'bg-indigo-100 text-indigo-800',
-                                        'homeowner' => 'bg-green-100 text-green-800'
-                                    ];
-                                    $rc = $roleColors[$u['role']] ?? 'bg-gray-100 text-gray-800';
-                                ?>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $rc ?> capitalize"><?= htmlspecialchars($u['role']) ?></span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <?php if ($u['is_active']): ?>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
-                                <?php else: ?>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Inactive</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= date('M d, Y', strtotime($u['created_at'])) ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
+                   
+<tbody class="bg-white divide-y divide-gray-200">
+    <?php if (empty($recentUsers)): ?>
+    <tr>
+        <td colspan="5" class="px-6 py-10 text-center text-sm text-gray-400">No users yet.</td>
+    </tr>
+    <?php endif; ?>
+    <?php foreach ($recentUsers as $u): ?>
+    <tr class="hover:bg-gray-50 transition-colors">
+
+        <!-- User — avatar + name + username -->
+        <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center gap-3">
+                <img class="h-8 w-8 rounded-full object-cover flex-shrink-0"
+                     src="<?= get_profile_picture_url($u['profile_picture'] ?? 'default.png', $u['first_name'], $u['last_name']) ?>"
+                     alt="<?= htmlspecialchars($u['first_name']) ?>">
+                <a href="<?= APP_URL ?>/profile/<?= htmlspecialchars($u['username']) ?>"
+                   class="text-sm font-semibold text-gray-900 hover:text-indigo-600 transition-colors">
+                    <?= htmlspecialchars($u['first_name'] . ' ' . $u['last_name']) ?>
+                </a>
+            </div>
+        </td>
+
+        <!-- Email -->
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= htmlspecialchars($u['email']) ?></td>
+
+        <!-- Role -->
+        <td class="px-6 py-4 whitespace-nowrap">
+            <?php
+                $roleColors = [
+                    'admin'     => 'bg-red-100 text-red-800',
+                    'craftsman' => 'bg-indigo-100 text-indigo-800',
+                    'homeowner' => 'bg-green-100 text-green-800',
+                ];
+                $rc = $roleColors[$u['role']] ?? 'bg-gray-100 text-gray-800';
+            ?>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $rc ?> capitalize">
+                <?= htmlspecialchars($u['role']) ?>
+            </span>
+        </td>
+
+        <!-- Status -->
+        <td class="px-6 py-4 whitespace-nowrap">
+            <?php if ($u['is_active']): ?>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+            <?php else: ?>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Inactive</span>
+            <?php endif; ?>
+        </td>
+
+        <!-- Joined + time ago -->
+        <td class="px-6 py-4 whitespace-nowrap">
+            <p class="text-sm text-gray-500"><?= date('M d, Y', strtotime($u['created_at'])) ?></p>
+            <p class="text-xs text-gray-400 mt-0.5">
+                <?php
+                    $diff = time() - strtotime($u['created_at']);
+                    if ($diff < 3600)        echo floor($diff / 60) . 'm ago';
+                    elseif ($diff < 86400)   echo floor($diff / 3600) . 'h ago';
+                    elseif ($diff < 604800)  echo floor($diff / 86400) . 'd ago';
+                    elseif ($diff < 2592000) echo floor($diff / 604800) . 'w ago';
+                    else                     echo floor($diff / 2592000) . 'mo ago';
+                ?>
+            </p>
+        </td>
+
+    </tr>
+    <?php endforeach; ?>
+</tbody>
+
                 </table>
             </div>
         </div>

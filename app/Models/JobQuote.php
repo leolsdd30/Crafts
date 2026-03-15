@@ -39,6 +39,21 @@ class JobQuote extends Model
     }
 
     /**
+     * Get a specific craftsman's quote for a specific job.
+     * Used to check the quote status when craftsman revisits the job page.
+     */
+    public function getCraftsmanQuoteForJob($jobId, $craftsmanId)
+    {
+        $stmt = $this->db->prepare(
+            "SELECT * FROM job_quotes
+             WHERE job_posting_id = :job_id AND craftsman_id = :craftsman_id
+             LIMIT 1"
+        );
+        $stmt->execute(['job_id' => $jobId, 'craftsman_id' => $craftsmanId]);
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Get all quotes for a specific job posting (used by the homeowner).
      */
     public function getQuotesByJob($jobId)

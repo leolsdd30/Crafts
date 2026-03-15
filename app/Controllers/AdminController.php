@@ -22,15 +22,18 @@ class AdminController extends Controller
         $statsModel = new Stats();
         $stats = $statsModel->getDashboardMetrics();
 
-        // Recent users
-        $stmt = $db->query("SELECT id, first_name, last_name, email, role, is_active, created_at, username FROM users ORDER BY created_at DESC LIMIT 10");
+        // Recent users — include profile_picture for avatar display
+        $stmt = $db->query(
+            "SELECT id, first_name, last_name, email, role, is_active, created_at, username, profile_picture
+             FROM users ORDER BY created_at DESC LIMIT 10"
+        );
         $recentUsers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->view('layouts/app', [
-            'pageTitle' => 'Admin Dashboard - Crafts',
+            'pageTitle'   => 'Admin Dashboard - Crafts',
             'contentView' => 'admin/dashboard',
-            'stats' => $stats,
-            'recentUsers' => $recentUsers
+            'stats'       => $stats,
+            'recentUsers' => $recentUsers,
         ]);
     }
 
@@ -43,28 +46,39 @@ class AdminController extends Controller
 
         $db = \App\Database\Database::getInstance()->getConnection();
 
-        $search = trim($_GET['search'] ?? '');
-        $roleFilter = $_GET['role'] ?? '';
+        $search       = trim($_GET['search'] ?? '');
+        $roleFilter   = $_GET['role']   ?? '';
         $statusFilter = $_GET['status'] ?? '';
+        $wilayaFilter = $_GET['wilaya'] ?? '';
+        $sortFilter   = $_GET['sort']   ?? 'date_desc';
 
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        if ($page < 1) $page = 1;
+        $page    = max(1, (int) ($_GET['page'] ?? 1));
         $perPage = 15;
-        $offset = ($page - 1) * $perPage;
+        $offset  = ($page - 1) * $perPage;
+
+        // Map sort value to SQL ORDER BY
+        $orderBy = match($sortFilter) {
+            'date_asc'  => 'u.created_at ASC',
+            'name_asc'  => 'u.first_name ASC, u.last_name ASC',
+            'name_desc' => 'u.first_name DESC, u.last_name DESC',
+            default     => 'u.created_at DESC',
+        };
 
         $countSql = "SELECT COUNT(u.id)
-                FROM users u
-                LEFT JOIN craftsmen_profiles cp ON u.id = cp.user_id
-                WHERE 1=1";
-        
-        $sql = "SELECT u.id, u.first_name, u.last_name, u.email, u.role, u.is_active, u.created_at, u.username,
+                     FROM users u
+                     LEFT JOIN craftsmen_profiles cp ON u.id = cp.user_id
+                     WHERE 1=1";
+
+        $sql = "SELECT u.id, u.first_name, u.last_name, u.email, u.role, u.is_active,
+                       u.created_at, u.username, u.profile_picture, u.wilaya,
                        cp.service_category, cp.is_verified
                 FROM users u
                 LEFT JOIN craftsmen_profiles cp ON u.id = cp.user_id
                 WHERE 1=1";
-        $params = [];
 
-        $filters = "";
+        $params  = [];
+        $filters = '';
+
         if (!empty($search)) {
             $filters .= " AND (u.first_name LIKE :s1 OR u.last_name LIKE :s2 OR u.email LIKE :s3)";
             $params['s1'] = '%' . $search . '%';
@@ -80,28 +94,37 @@ class AdminController extends Controller
         } elseif ($statusFilter === 'inactive') {
             $filters .= " AND u.is_active = FALSE";
         }
+        if (!empty($wilayaFilter)) {
+            $filters .= " AND u.wilaya = :wilaya";
+            $params['wilaya'] = $wilayaFilter;
+        }
 
         $countStmt = $db->prepare($countSql . $filters);
         $countStmt->execute($params);
         $totalUsers = (int) $countStmt->fetchColumn();
-        $totalPages = ceil($totalUsers / $perPage);
+        $totalPages = (int) ceil($totalUsers / $perPage);
 
-        $sql .= $filters . " ORDER BY u.created_at DESC LIMIT $perPage OFFSET $offset";
-
-        $stmt = $db->prepare($sql);
+        $stmt = $db->prepare($sql . $filters . " ORDER BY $orderBy LIMIT $perPage OFFSET $offset");
         $stmt->execute($params);
         $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
+        // Distinct wilayas for filter dropdown
+        $wilayaStmt = $db->query("SELECT DISTINCT wilaya FROM users WHERE wilaya IS NOT NULL AND wilaya != '' ORDER BY wilaya ASC");
+        $wilayas = $wilayaStmt->fetchAll(\PDO::FETCH_COLUMN);
+
         $this->view('layouts/app', [
-            'pageTitle' => 'User Management - Admin',
-            'contentView' => 'admin/users',
-            'users' => $users,
-            'search' => $search,
-            'roleFilter' => $roleFilter,
+            'pageTitle'    => 'User Management - Admin',
+            'contentView'  => 'admin/users',
+            'users'        => $users,
+            'search'       => $search,
+            'roleFilter'   => $roleFilter,
             'statusFilter' => $statusFilter,
-            'page' => $page,
-            'totalPages' => $totalPages,
-            'totalUsers' => $totalUsers
+            'wilayaFilter' => $wilayaFilter,
+            'sortFilter'   => $sortFilter,
+            'wilayas'      => $wilayas,
+            'page'         => $page,
+            'totalPages'   => $totalPages,
+            'totalUsers'   => $totalUsers,
         ]);
     }
 
@@ -127,17 +150,17 @@ class AdminController extends Controller
         }
 
         $newStatus = $user['is_active'] ? 0 : 1;
-        $userModel->executeQuery("UPDATE users SET is_active = :status WHERE id = :id", [
-            'status' => $newStatus,
-            'id' => $userId
-        ]);
+        $userModel->executeQuery(
+            "UPDATE users SET is_active = :status WHERE id = :id",
+            ['status' => $newStatus, 'id' => $userId]
+        );
 
         header("Location: " . APP_URL . "/admin/users?success=status_updated");
         exit;
     }
 
     /**
-     * Craftsman verification page.
+     * Craftsman verification page — with search, wilaya, category, sort, and pagination.
      */
     public function verifications()
     {
@@ -145,30 +168,95 @@ class AdminController extends Controller
 
         $db = \App\Database\Database::getInstance()->getConnection();
 
-        $filter = $_GET['filter'] ?? 'pending';
+        $filter         = $_GET['filter']   ?? 'pending';
+        $search         = trim($_GET['search'] ?? '');
+        $wilayaFilter   = $_GET['wilaya']   ?? '';
+        $categoryFilter = $_GET['category'] ?? '';
+        $sortFilter     = $_GET['sort']     ?? 'date_desc';
 
-        $sql = "SELECT cp.*, u.first_name, u.last_name, u.email, u.profile_picture, u.wilaya, u.username, u.created_at as user_created
-                FROM craftsmen_profiles cp
-                JOIN users u ON cp.user_id = u.id
-                WHERE u.is_active = TRUE AND u.role = 'craftsman'";
+        $page    = max(1, (int) ($_GET['page'] ?? 1));
+        $perPage = 12;
+        $offset  = ($page - 1) * $perPage;
+
+        // Map sort value to SQL ORDER BY
+        $orderBy = match($sortFilter) {
+            'date_asc'  => 'u.created_at ASC',
+            'name_asc'  => 'u.first_name ASC, u.last_name ASC',
+            'name_desc' => 'u.first_name DESC, u.last_name DESC',
+            default     => 'cp.id DESC',
+        };
+
+        $baseSql = "FROM craftsmen_profiles cp
+                    JOIN users u ON cp.user_id = u.id
+                    WHERE u.is_active = TRUE AND u.role = 'craftsman'";
+
+        $params = [];
 
         if ($filter === 'pending') {
-            $sql .= " AND cp.is_verified = FALSE";
+            $baseSql .= " AND cp.is_verified = FALSE";
         } elseif ($filter === 'verified') {
-            $sql .= " AND cp.is_verified = TRUE";
+            $baseSql .= " AND cp.is_verified = TRUE";
+        }
+        if (!empty($search)) {
+            $baseSql .= " AND (u.first_name LIKE :s1 OR u.last_name LIKE :s2)";
+            $params['s1'] = '%' . $search . '%';
+            $params['s2'] = '%' . $search . '%';
+        }
+        if (!empty($wilayaFilter)) {
+            $baseSql .= " AND u.wilaya = :wilaya";
+            $params['wilaya'] = $wilayaFilter;
+        }
+        if (!empty($categoryFilter)) {
+            $baseSql .= " AND cp.service_category = :category";
+            $params['category'] = $categoryFilter;
         }
 
-        $sql .= " ORDER BY cp.id DESC";
+        // Count total
+        $countStmt = $db->prepare("SELECT COUNT(cp.id) " . $baseSql);
+        $countStmt->execute($params);
+        $totalCraftsmen = (int) $countStmt->fetchColumn();
+        $totalPages     = (int) ceil($totalCraftsmen / $perPage);
 
-        $stmt = $db->prepare($sql);
-        $stmt->execute();
+        // Fetch page
+        $selectSql = "SELECT cp.*, u.first_name, u.last_name, u.email,
+                             u.profile_picture, u.wilaya, u.username,
+                             u.created_at as user_created " . $baseSql;
+        $selectSql .= " ORDER BY $orderBy LIMIT $perPage OFFSET $offset";
+
+        $stmt = $db->prepare($selectSql);
+        $stmt->execute($params);
         $craftsmen = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
+        // Distinct wilayas and categories for dropdowns
+        $wilayaStmt = $db->query(
+            "SELECT DISTINCT u.wilaya FROM craftsmen_profiles cp
+             JOIN users u ON cp.user_id = u.id
+             WHERE u.wilaya IS NOT NULL AND u.wilaya != ''
+             ORDER BY u.wilaya ASC"
+        );
+        $wilayas = $wilayaStmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        $categoryStmt = $db->query(
+            "SELECT DISTINCT service_category FROM craftsmen_profiles
+             WHERE service_category IS NOT NULL AND service_category != ''
+             ORDER BY service_category ASC"
+        );
+        $categories = $categoryStmt->fetchAll(\PDO::FETCH_COLUMN);
+
         $this->view('layouts/app', [
-            'pageTitle' => 'Craftsman Verification - Admin',
-            'contentView' => 'admin/verifications',
-            'craftsmen' => $craftsmen,
-            'filter' => $filter
+            'pageTitle'      => 'Craftsman Verification - Admin',
+            'contentView'    => 'admin/verifications',
+            'craftsmen'      => $craftsmen,
+            'filter'         => $filter,
+            'search'         => $search,
+            'wilayaFilter'   => $wilayaFilter,
+            'categoryFilter' => $categoryFilter,
+            'sortFilter'     => $sortFilter,
+            'wilayas'        => $wilayas,
+            'categories'     => $categories,
+            'page'           => $page,
+            'totalPages'     => $totalPages,
+            'totalCraftsmen' => $totalCraftsmen,
         ]);
     }
 
@@ -196,23 +284,26 @@ class AdminController extends Controller
 
         $newStatus = $profile['is_verified'] ? 0 : 1;
 
-        $db = \App\Database\Database::getInstance()->getConnection();
+        $db   = \App\Database\Database::getInstance()->getConnection();
         $stmt = $db->prepare("UPDATE craftsmen_profiles SET is_verified = :status WHERE user_id = :uid");
         $stmt->execute(['status' => $newStatus, 'uid' => $userId]);
 
-        // Notify the craftsman
         $notif = new Notification();
         if ($newStatus) {
-            $notif->send($userId, 'booking_accepted', 'Profile Verified!', 
-                'Congratulations! Your profile has been verified by Crafts. You now have a verified badge!', 
-                APP_URL . '/profile/' . $userId);
+            $notif->send(
+                $userId, 'booking_accepted', 'Profile Verified!',
+                'Congratulations! Your profile has been verified by Crafts. You now have a verified badge!',
+                APP_URL . '/profile/' . $userId
+            );
         } else {
-            $notif->send($userId, 'booking_declined', 'Verification Removed', 
-                'Your verified status has been removed. Please contact support for more info.', 
-                APP_URL . '/profile/' . $userId);
+            $notif->send(
+                $userId, 'booking_declined', 'Verification Removed',
+                'Your verified status has been removed. Please contact support for more info.',
+                APP_URL . '/profile/' . $userId
+            );
         }
 
-        header("Location: " . APP_URL . "/admin/verifications?success=updated");
+        header("Location: " . APP_URL . "/admin/verifications?success=updated&filter=" . urlencode($_POST['filter'] ?? 'pending'));
         exit;
     }
 }

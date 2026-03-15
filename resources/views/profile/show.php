@@ -198,7 +198,7 @@ if ($isCraftsman && !empty($craftsmanDetails['portfolio_images'])) {
                                 </svg>
                                 Send Message
                             </a>
-                            <?php if ($isCraftsman): ?>
+                            <?php if ($isCraftsman && $isHomeowner): ?>
                             <a href="<?= APP_URL ?>/bookings/create/<?= htmlspecialchars($user['username']) ?>"
                                class="flex items-center justify-center w-full px-4 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition">
                                 <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
