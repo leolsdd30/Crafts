@@ -14,7 +14,7 @@ if (defined('APP_URL')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 — Page Not Found | Crafts</title>
+    <title>403 — Access Denied | Crafts</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -23,18 +23,17 @@ if (defined('APP_URL')) {
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen px-4">
     <div class="text-center max-w-lg">
-        <!-- Large 404 Number -->
         <div class="relative inline-block mb-6">
-            <span class="text-[10rem] font-extrabold leading-none text-indigo-100 select-none">404</span>
+            <span class="text-[10rem] font-extrabold leading-none text-red-100 select-none">403</span>
             <div class="absolute inset-0 flex items-center justify-center">
-                <svg class="w-24 h-24 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg class="w-24 h-24 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
             </div>
         </div>
 
-        <h1 class="text-3xl font-bold text-gray-900 mb-3">Page Not Found</h1>
-        <p class="text-gray-500 mb-8 text-lg">Sorry, the page you're looking for doesn't exist or has been moved.</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-3">Access Denied</h1>
+        <p class="text-gray-500 mb-8 text-lg">Sorry, you do not have permission to access this page.</p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a href="<?= htmlspecialchars($homeUrl) ?>" class="inline-flex items-center px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150 shadow-sm">
