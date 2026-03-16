@@ -269,7 +269,7 @@
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm text-gray-700 leading-snug"><?= $activity['label']['text'] ?></p>
+                        <p class="text-sm text-gray-700 leading-snug truncate"><?= $activity['label']['text'] ?></p>
                         <?php if (!empty($activity['time'])): ?>
                         <p class="text-xs text-gray-400 mt-0.5">
                             <?php
@@ -443,7 +443,7 @@
                                         </svg>
                                         <?php endif; ?>
                                     </p>
-                                    <p class="mt-1 text-sm text-gray-600 line-clamp-2"><?= htmlspecialchars($booking['description']) ?></p>
+                                    <p class="mt-1 text-sm text-gray-600 line-clamp-2 break-words"><?= htmlspecialchars($booking['description']) ?></p>
                                     <div class="mt-2 flex items-center flex-wrap gap-2 text-xs text-gray-500">
                                         <span class="flex items-center">
                                             <svg class="h-3 w-3 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">

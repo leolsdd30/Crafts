@@ -88,7 +88,7 @@
                             </svg>
                             About Me
                         </h2>
-                        <div class="prose prose-sm sm:prose-base text-gray-600 leading-relaxed max-w-none">
+                        <div class="prose prose-sm sm:prose-base text-gray-600 leading-relaxed max-w-none break-words">
                             <?php if (!empty($profile['bio'])): ?>
                                 <?= nl2br(htmlspecialchars($profile['bio'])) ?>
                             <?php else: ?>

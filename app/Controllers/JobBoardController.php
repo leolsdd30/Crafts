@@ -11,31 +11,40 @@ use App\Auth\Middleware;
 class JobBoardController extends Controller
 {
     /**
-     * Show the public job board (list of all open jobs).
+     * Show the public job board (list of all open jobs) with pagination.
      */
     public function index()
     {
         $jobModel = new JobPosting();
-
+ 
         $filters = [
             'category' => $_GET['category'] ?? null,
             'search'   => $_GET['q']        ?? null,
             'wilaya'   => $_GET['wilaya']   ?? null,
             'sort'     => $_GET['sort']     ?? null
         ];
-
-        $jobs = $jobModel->getOpenJobs($filters);
-
+ 
+        $perPage    = 12;
+        $page       = max(1, (int)($_GET['page'] ?? 1));
+        $offset     = ($page - 1) * $perPage;
+        $totalJobs  = $jobModel->countOpenJobs($filters);
+        $totalPages = (int)ceil($totalJobs / $perPage);
+        $jobs       = $jobModel->getOpenJobs($filters, $perPage, $offset);
+ 
         $this->view('layouts/app', [
             'pageTitle'       => 'Browse Jobs - Crafts',
             'contentView'     => 'jobboard/index',
             'jobs'            => $jobs,
             'filters'         => $filters,
+            'page'            => $page,
+            'totalPages'      => $totalPages,
+            'totalJobs'       => $totalJobs,
             'metaDescription' => 'Browse available jobs and projects posted by homeowners on Crafts. Find your next gig today.',
             'ogTitle'         => 'Browse Jobs on Crafts',
             'ogDescription'   => 'Browse available jobs and projects posted by homeowners on Crafts. Find your next gig today.'
         ]);
     }
+ 
 
     /**
      * Show the form to post a new job.

@@ -17,25 +17,21 @@ class JobPosting extends Model
         );
 
         return $stmt->execute([
-            'posted_by' => $data['posted_by_user_id'],
-            'category' => $data['service_category'],
-            'title' => $data['title'],
+            'posted_by'   => $data['posted_by_user_id'],
+            'category'    => $data['service_category'],
+            'title'       => $data['title'],
             'description' => $data['description'],
-            'address' => $data['address'],
-            'budget' => $data['budget_range'] ?? null
+            'address'     => $data['address'],
+            'budget'      => $data['budget_range'] ?? null
         ]);
     }
 
     /**
-     * Get all currently open jobs with optional filters.
+     * Build the shared WHERE clause + params for filters.
      */
-    public function getOpenJobs($filters = [])
+    private function buildFilterSql($filters)
     {
-        $sql = "SELECT j.*, u.first_name, u.last_name 
-                FROM job_postings j
-                JOIN users u ON j.posted_by_user_id = u.id
-                WHERE j.status = 'open'";
-
+        $sql    = " WHERE j.status = 'open'";
         $params = [];
 
         if (!empty($filters['category'])) {
@@ -54,11 +50,38 @@ class JobPosting extends Model
             $params['search2'] = '%' . $filters['search'] . '%';
         }
 
+        return [$sql, $params];
+    }
+
+    /**
+     * Count total open jobs matching filters — for pagination.
+     */
+    public function countOpenJobs($filters = [])
+    {
+        [$where, $params] = $this->buildFilterSql($filters);
+        $sql  = "SELECT COUNT(*) FROM job_postings j JOIN users u ON j.posted_by_user_id = u.id" . $where;
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Get open jobs with optional filters, pagination.
+     */
+    public function getOpenJobs($filters = [], $limit = 0, $offset = 0)
+    {
+        [$where, $params] = $this->buildFilterSql($filters);
+
+        $sql = "SELECT j.*, u.first_name, u.last_name 
+                FROM job_postings j
+                JOIN users u ON j.posted_by_user_id = u.id"
+             . $where;
+
         $sort = $filters['sort'] ?? '';
-        if ($sort === 'oldest') {
-            $sql .= " ORDER BY j.created_at ASC";
-        } else {
-            $sql .= " ORDER BY j.created_at DESC";
+        $sql .= $sort === 'oldest' ? " ORDER BY j.created_at ASC" : " ORDER BY j.created_at DESC";
+
+        if ($limit > 0) {
+            $sql .= " LIMIT " . (int)$limit . " OFFSET " . (int)$offset;
         }
 
         $stmt = $this->db->prepare($sql);

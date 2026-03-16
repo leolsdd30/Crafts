@@ -340,7 +340,7 @@ if ($isCraftsman && !empty($craftsmanDetails['portfolio_images'])) {
                             </div>
                             <p class="text-xs text-gray-400 mt-0.5"><?= date('M d, Y', strtotime($review['created_at'])) ?></p>
                             <?php if (!empty($review['comment'])): ?>
-                            <p class="mt-2 text-sm text-gray-600 leading-relaxed"><?= nl2br(htmlspecialchars($review['comment'])) ?></p>
+                            <p class="mt-2 text-sm text-gray-600 leading-relaxed break-words"><?= nl2br(htmlspecialchars($review['comment'])) ?></p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -467,7 +467,7 @@ if ($isCraftsman && !empty($craftsmanDetails['portfolio_images'])) {
                             </div>
                         </div>
 
-                        <p class="text-sm text-gray-500 line-clamp-3 mb-4 leading-relaxed">
+                        <p class="text-sm text-gray-500 line-clamp-3 mb-4 leading-relaxed break-words">
                             <?= !empty($craftsmanDetails['bio']) ? htmlspecialchars($craftsmanDetails['bio']) : 'Your bio will appear here. Edit your profile to add one!' ?>
                         </p>
 

@@ -241,7 +241,7 @@ $activeFilterCount = (int)!empty($filters['category'])
 
                     <!-- Bio snippet -->
                     <?php if (!empty($craft['bio'])): ?>
-                    <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-4 flex-grow">
+                    <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-4 flex-grow break-words">
                         <?= htmlspecialchars($craft['bio']) ?>
                     </p>
                     <?php else: ?>

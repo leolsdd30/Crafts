@@ -97,6 +97,8 @@ $router->get('/notifications', [NotificationController::class , 'index']);
 $router->post('/notifications/mark-all-read', [NotificationController::class , 'markAllRead']);
 $router->get('/notifications/read', [NotificationController::class , 'markRead']);
 $router->get('/notifications/unread-count', [NotificationController::class , 'unreadCount']);
+$router->post('/notifications/delete',     [NotificationController::class, 'delete']);
+$router->post('/notifications/delete-all', [NotificationController::class, 'deleteAll']);
 
 // Admin Routes
 $router->get('/admin/dashboard', [AdminController::class , 'dashboard']);

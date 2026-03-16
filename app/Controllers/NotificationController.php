@@ -105,4 +105,56 @@ class NotificationController extends Controller
         echo json_encode(['count' => $count]);
         exit;
     }
+
+    /**
+     * Delete (dismiss) a single notification — AJAX POST.
+     */
+    public function delete()
+    {
+        Middleware::requireLogin();
+ 
+        $input  = json_decode(file_get_contents('php://input'), true) ?? [];
+        $token  = $input['csrf_token'] ?? ($_POST['csrf_token'] ?? '');
+ 
+        if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            $this->json(['success' => false, 'message' => 'Invalid CSRF token.'], 403);
+            return;
+        }
+ 
+        $notifId = (int) ($input['notification_id'] ?? 0);
+        if (!$notifId) {
+            $this->json(['success' => false, 'message' => 'Missing notification ID.'], 400);
+            return;
+        }
+ 
+        $notifModel = new Notification();
+        $notifModel->delete($notifId, $_SESSION['user_id']);
+ 
+        $this->json(['success' => true]);
+    }
+ 
+    /**
+     * Delete ALL notifications for the current user — AJAX POST.
+     */
+    public function deleteAll()
+    {
+        Middleware::requireLogin();
+ 
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+        $token = $input['csrf_token'] ?? ($_POST['csrf_token'] ?? '');
+ 
+        if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            $this->json(['success' => false, 'message' => 'Invalid CSRF token.'], 403);
+            return;
+        }
+ 
+        $db = \App\Database\Database::getInstance()->getConnection();
+        $stmt = $db->prepare("DELETE FROM notifications WHERE user_id = :uid");
+        $stmt->execute(['uid' => $_SESSION['user_id']]);
+ 
+        $this->json(['success' => true]);
+    }
+ 
 }
+
+    
