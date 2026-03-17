@@ -30,12 +30,11 @@ class SearchController extends Controller
 
         $craftsmen = $craftsmanModel->getAllCraftsmen($filters, $perPage, $offset);
 
-        // Map favorites if user is logged in as homeowner
-        if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'homeowner') {
+        // Map favorites if user is logged in 
+        if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') !== 'admin') {
             $favoriteModel = new Favorite();
-            $myFavorites = $favoriteModel->getFavoritesForHomeowner($_SESSION['user_id']);
-            $favoriteIds = array_column($myFavorites, 'id'); // user.id of favorite craftsmen
-            
+            $myFavorites   = $favoriteModel->getFavoritesForHomeowner($_SESSION['user_id']);
+            $favoriteIds   = array_column($myFavorites, 'id');
             foreach ($craftsmen as &$craftsman) {
                 $craftsman['is_favorite'] = in_array($craftsman['user_id'], $favoriteIds);
             }

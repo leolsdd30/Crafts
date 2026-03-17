@@ -157,7 +157,7 @@ $activeFilterCount = (int)!empty($filters['category'])
                 <div class="h-1 <?= $catStyles['bg'] ?> w-full absolute top-0 left-0 z-10"></div>
 
                 <!-- Favorite heart — homeowners only -->
-                <?php if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'homeowner'): ?>
+                <?php if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') !== 'admin'): ?>
                 <button type="button"
                         onclick="toggleFavorite(<?= $craft['user_id'] ?>, this)"
                         class="absolute top-4 right-4 p-1.5 rounded-full z-20 bg-white shadow-sm border
@@ -274,7 +274,7 @@ $activeFilterCount = (int)!empty($filters['category'])
                        class="flex-1 text-center py-2 px-3 rounded-lg text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 transition duration-150">
                         View Profile
                     </a>
-                    <?php if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'homeowner'): ?>
+                    <?php if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') !== 'admin'): ?>
                     <a href="<?= APP_URL ?>/bookings/create/<?= htmlspecialchars($craft['username']) ?>"
                        class="flex-1 text-center py-2 px-3 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
                         Book Now

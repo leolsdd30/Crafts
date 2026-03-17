@@ -76,10 +76,10 @@ class ProfileController extends Controller
             $reviews = $reviewModel->getReviewsForCraftsman($id);
             $rating = $reviewModel->getCraftsmanRating($id);
 
-            if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'homeowner') {
-                $favoriteModel = new Favorite();
-                $isFavorite = $favoriteModel->isFavorite($_SESSION['user_id'], $id);
-            }
+             if (isset($_SESSION['user_id']) && $_SESSION['user_id'] != $id && ($_SESSION['role'] ?? '') !== 'admin') {
+            $favoriteModel = new Favorite();
+            $isFavorite = $favoriteModel->isFavorite($_SESSION['user_id'], $id);
+                 }
         }
 
         // Prepare SEO Tags

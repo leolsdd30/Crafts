@@ -12,98 +12,119 @@ class BookingController extends Controller
 {
     /**
      * Show the booking request form (from a craftsman's profile).
+     * Both homeowners and craftsmen can book a craftsman.
      */
     public function create($username = null)
     {
         Middleware::requireLogin();
-
-        // only homeowner can create bookings 
-        if ($_SESSION['role'] !== 'homeowner') {
+ 
+        // Admins cannot create bookings
+        if (($_SESSION['role'] ?? '') === 'admin') {
             header("Location: " . APP_URL . "/profile/" . ($username ?? ''));
             exit;
         }
-
+ 
         if (!$username) {
             header("Location: " . APP_URL . "/search");
             exit;
         }
-
+ 
         $userModel = new User();
         $craftsman = $userModel->findByUsername($username);
-
+ 
         if (!$craftsman || $craftsman['role'] !== 'craftsman') {
             echo "Craftsman not found.";
             exit;
         }
-
+ 
         // Cannot book yourself
         if ((int)$craftsman['id'] === (int)$_SESSION['user_id']) {
             header("Location: " . APP_URL . "/profile/" . $username);
             exit;
         }
-
+ 
         $this->view('layouts/app', [
-            'pageTitle' => 'Request Booking - Crafts',
+            'pageTitle'   => 'Request Booking - Crafts',
             'contentView' => 'bookings/create',
-            'craftsman' => $craftsman
+            'craftsman'   => $craftsman
         ]);
     }
-
+ 
     /**
      * Process the booking request form submission.
+     * Both homeowners and craftsmen can submit a booking.
      */
     public function store()
     {
         Middleware::requireLogin();
         Middleware::verifyCsrfToken();
-
-        $craftsmanId = $_POST['craftsman_id'] ?? null;
-        $description = trim($_POST['description'] ?? '');
-        $address = trim($_POST['address'] ?? '');
-        $scheduledDate = $_POST['scheduled_date'] ?? '';
-
-        // Basic validation
+ 
+        // Admins cannot submit bookings
+        if (($_SESSION['role'] ?? '') === 'admin') {
+            header("Location: " . APP_URL . "/search");
+            exit;
+        }
+ 
+        $craftsmanId   = $_POST['craftsman_id']   ?? null;
+        $description   = trim($_POST['description']   ?? '');
+        $address       = trim($_POST['address']       ?? '');
+        $scheduledDate = $_POST['scheduled_date']     ?? '';
+ 
         if (empty($craftsmanId) || empty($description) || empty($address) || empty($scheduledDate)) {
             $userModel = new User();
             $craftsman = $userModel->findById($craftsmanId);
-
+ 
             $this->view('layouts/app', [
-                'pageTitle' => 'Request Booking - Crafts',
+                'pageTitle'   => 'Request Booking - Crafts',
                 'contentView' => 'bookings/create',
-                'craftsman' => $craftsman,
-                'error' => 'Please fill in all required fields.'
+                'craftsman'   => $craftsman,
+                'error'       => 'Please fill in all required fields.'
             ]);
             return;
         }
-
+ 
         $bookingModel = new Booking();
         $success = $bookingModel->create([
-            'homeowner_id' => $_SESSION['user_id'],
-            'craftsman_id' => $craftsmanId,
-            'description' => $description,
-            'address' => $address,
+            'homeowner_id'   => $_SESSION['user_id'],
+            'craftsman_id'   => $craftsmanId,
+            'description'    => $description,
+            'address'        => $address,
             'scheduled_date' => $scheduledDate
         ]);
-
+ 
         if ($success) {
             $userModel = new User();
             $craftsman = $userModel->findById($craftsmanId);
-            $dashboard = $_SESSION['role'] === 'craftsman' ? '/craftsman/dashboard#bookings' : '/homeowner/dashboard#bookings';
+ 
+            // Notify craftsman
+            $notif = new Notification();
+            $notif->send(
+                $craftsmanId,
+                'booking_pending',
+                'New Booking Request',
+                $_SESSION['name'] . ' sent you a booking request.',
+                APP_URL . '/craftsman/dashboard#bookings'
+            );
+ 
+            $dashboard = ($_SESSION['role'] ?? '') === 'craftsman'
+                ? '/craftsman/dashboard#sent-bookings'
+                : '/homeowner/dashboard#bookings';
+ 
             header("Location: " . APP_URL . $dashboard . "?success=booking_requested");
             exit;
         } else {
             $userModel = new User();
             $craftsman = $userModel->findById($craftsmanId);
-
+ 
             $this->view('layouts/app', [
-                'pageTitle' => 'Request Booking - Crafts',
+                'pageTitle'   => 'Request Booking - Crafts',
                 'contentView' => 'bookings/create',
-                'craftsman' => $craftsman,
-                'error' => 'Failed to submit booking request. Please try again.'
+                'craftsman'   => $craftsman,
+                'error'       => 'Failed to submit booking request. Please try again.'
             ]);
         }
     }
-
+    
     /**
      * Craftsman accepts a booking request — goes directly to in_progress.
      */

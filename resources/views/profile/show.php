@@ -73,7 +73,7 @@ if ($isCraftsman && !empty($craftsmanDetails['portfolio_images'])) {
                         </div>
 
                         <!-- Favorite button (homeowners only, viewing a craftsman) -->
-                        <?php if ($isHomeowner && $isCraftsman && !$isOwnProfile): ?>
+                        <?php if (isset($_SESSION['user_id']) && $isCraftsman && !$isOwnProfile && ($_SESSION['role'] ?? '') !== 'admin'): ?>
                         <div class="absolute top-3 right-3">
                             <button type="button" onclick="toggleFavorite(<?= $user['id'] ?>, this)"
                                 class="p-1.5 rounded-full bg-white shadow-sm border transition-all duration-150
@@ -198,7 +198,7 @@ if ($isCraftsman && !empty($craftsmanDetails['portfolio_images'])) {
                                 </svg>
                                 Send Message
                             </a>
-                            <?php if ($isCraftsman && $isHomeowner): ?>
+                            <?php if ($isCraftsman && isset($_SESSION['user_id']) && !$isOwnProfile && ($_SESSION['role'] ?? '') !== 'admin'): ?>
                             <a href="<?= APP_URL ?>/bookings/create/<?= htmlspecialchars($user['username']) ?>"
                                class="flex items-center justify-center w-full px-4 py-2.5 border border-transparent rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition">
                                 <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

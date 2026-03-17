@@ -50,6 +50,27 @@
                         <svg class="mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                         Reviews
                     </button>
+                    <button onclick="switchTab('sent-bookings')" data-tab="sent-bookings"
+                        class="group tab-btn flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200">
+                        <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        Sent Bookings
+                        <?php if (!empty($sentBookings)): ?>
+                        <span class="ml-auto bg-indigo-100 text-indigo-700 py-0.5 px-2 rounded-full text-xs font-bold"><?= count($sentBookings) ?></span>
+                        <?php endif; ?>
+                    </button>
+ 
+                    <button onclick="switchTab('saved')" data-tab="saved"
+                        class="group tab-btn flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200">
+                        <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                        Saved
+                        <?php if (!empty($favorites)): ?>
+                        <span class="ml-auto bg-pink-100 text-pink-700 py-0.5 px-2 rounded-full text-xs font-bold"><?= count($favorites) ?></span>
+                        <?php endif; ?>
+                    </button>
                 </nav>
 
                 <!-- Sidebar Action Buttons -->
@@ -576,6 +597,185 @@
                     </div>
                     <?php endif; ?>
                 </div>
+                    <!-- Tab: Sent Bookings -->
+                <div id="tab-sent-bookings" class="tab-content" style="display:none">
+                    <?php if (!empty($sentBookings)): ?>
+                    <div class="space-y-3">
+                        <?php foreach ($sentBookings as $booking): ?>
+                        <div class="bg-white rounded-lg shadow-sm border <?= $booking['status'] === 'requested' ? 'border-yellow-200' : ($booking['status'] === 'counter_offered' ? 'border-orange-200' : ($booking['status'] === 'in_progress' ? 'border-blue-200' : ($booking['status'] === 'pending_completion' ? 'border-purple-200' : 'border-gray-100'))) ?> p-5">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-base font-bold text-gray-900 flex items-center gap-1">
+                                        Booking with <?= htmlspecialchars($booking['first_name'] . ' ' . $booking['last_name']) ?>
+                                        <?php if (!empty($booking['is_verified'])): ?>
+                                        <svg class="h-4 w-4 text-blue-500 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <?php endif; ?>
+                                    </p>
+                                    <p class="mt-1 text-sm text-gray-600 line-clamp-2 break-words"><?= htmlspecialchars($booking['description']) ?></p>
+                                    <div class="mt-2 flex items-center flex-wrap gap-2 text-xs text-gray-500">
+                                        <span class="flex items-center">
+                                            <svg class="h-3 w-3 mr-1 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                                            </svg>
+                                            <?= htmlspecialchars(preg_replace('/^\d{2}\s-\s/', '', $booking['address'])) ?>
+                                        </span>
+                                        <span class="flex items-center">
+                                            <svg class="h-3 w-3 mr-1 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                                            </svg>
+                                            <?= date('M d, Y', strtotime($booking['scheduled_date'])) ?>
+                                        </span>
+                                        <?php if (!empty($booking['quoted_price'])): ?>
+                                        <span class="flex items-center font-semibold text-green-600">
+                                            <?= number_format($booking['quoted_price'], 2) ?> DZD
+                                        </span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <span class="ml-3 px-2.5 py-1 inline-flex text-xs leading-4 font-semibold rounded-full
+                                    <?php
+                                    switch($booking['status']) {
+                                        case 'requested':          echo 'bg-yellow-100 text-yellow-800'; break;
+                                        case 'counter_offered':    echo 'bg-orange-100 text-orange-800'; break;
+                                        case 'in_progress':        echo 'bg-blue-100 text-blue-800'; break;
+                                        case 'pending_completion': echo 'bg-purple-100 text-purple-800'; break;
+                                        case 'completed':          echo 'bg-green-100 text-green-800'; break;
+                                        case 'cancelled':          echo 'bg-gray-100 text-gray-800'; break;
+                                        default:                   echo 'bg-gray-100 text-gray-800';
+                                    }
+                                    ?>">
+                                    <?php
+                                    switch($booking['status']) {
+                                        case 'requested':          echo 'Pending'; break;
+                                        case 'counter_offered':    echo 'Counter Received'; break;
+                                        case 'in_progress':        echo 'In Progress'; break;
+                                        case 'pending_completion': echo 'Awaiting Confirmation'; break;
+                                        case 'completed':          echo 'Completed'; break;
+                                        case 'cancelled':          echo 'Cancelled'; break;
+                                        default: echo ucfirst($booking['status']);
+                                    }
+                                    ?>
+                                </span>
+                            </div>
+ 
+                            <?php if ($booking['status'] === 'counter_offered'): ?>
+                            <div class="mt-3 pt-3 border-t border-orange-100 bg-orange-50 -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                                <p class="text-xs font-semibold text-orange-700 mb-2">📨 Counter-offer received — review and respond</p>
+                                <?php if (!empty($booking['counter_description'])): ?>
+                                <p class="text-xs text-gray-600 mb-2 break-words"><?= htmlspecialchars($booking['counter_description']) ?></p>
+                                <?php endif; ?>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <form action="<?= APP_URL ?>/bookings/accept-counter" method="POST" class="inline">
+                                        <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                                        <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                                        <button type="submit" class="px-3 py-1.5 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition">Accept Counter</button>
+                                    </form>
+                                    <form action="<?= APP_URL ?>/bookings/cancel-counter" method="POST" class="inline">
+                                        <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                                        <input type="hidden" name="booking_id" value="<?= $booking['id'] ?>">
+                                        <button type="submit" class="px-3 py-1.5 text-xs font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 transition">Decline</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+ 
+                            <div class="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
+                                <a href="<?= APP_URL ?>/profile/<?= $booking['username'] ?>" class="px-3 py-1.5 text-xs font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition">View Craftsman</a>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php else: ?>
+                    <div class="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+                        <div class="mx-auto h-14 w-14 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                            <svg class="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-gray-900">No sent bookings yet</h3>
+                        <p class="mt-1 text-xs text-gray-400">When you book another craftsman, your requests will appear here.</p>
+                        <a href="<?= APP_URL ?>/search" class="mt-4 inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition">
+                            Find Craftsmen
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                </div>
+ 
+ 
+<!-- ── ADDITION 3: Saved (Favorites) tab content ─────────────────────────────
+     Add this after tab-sent-bookings, alongside other tab-content divs.
+-->
+ 
+                <!-- Tab: Saved -->
+                <div id="tab-saved" class="tab-content" style="display:none">
+                    <?php if (!empty($favorites)): ?>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <?php foreach ($favorites as $favorite): ?>
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md hover:border-pink-200 transition-all duration-200 p-5 flex flex-col justify-between relative overflow-hidden group">
+                            <svg class="absolute -right-4 -bottom-4 h-24 w-24 text-pink-50 opacity-10 group-hover:scale-110 transition-transform duration-300 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                            </svg>
+                            <div class="flex items-start space-x-4 relative z-10">
+                                <img src="<?= get_profile_picture_url($favorite['profile_picture'] ?? 'default.png', $favorite['first_name'], $favorite['last_name']) ?>"
+                                     alt="<?= htmlspecialchars($favorite['first_name']) ?>"
+                                     class="h-12 w-12 rounded-full object-cover shadow-sm border border-gray-100">
+                                <div>
+                                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-1">
+                                        <?= htmlspecialchars($favorite['first_name'] . ' ' . $favorite['last_name']) ?>
+                                        <?php if (!empty($favorite['is_verified'])): ?>
+                                        <svg class="h-4 w-4 text-blue-500 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                        <?php endif; ?>
+                                    </h3>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 mt-1">
+                                        <?= htmlspecialchars($favorite['service_category'] ?? '') ?>
+                                    </span>
+                                    <?php if (!empty($favorite['wilaya'])): ?>
+                                    <p class="text-xs text-gray-400 mt-1"><?= htmlspecialchars(preg_replace('/^\d{2}\s-\s/', '', $favorite['wilaya'])) ?></p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between relative z-10">
+                                <div>
+                                    <span class="text-xs text-gray-400 uppercase tracking-wider">Hourly</span>
+                                    <p class="font-bold text-gray-900 text-sm"><?= number_format($favorite['hourly_rate'] ?? 0, 2) ?> <span class="text-xs font-normal text-gray-400">DZD/hr</span></p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button type="button"
+                                            onclick="confirmRemoveFavorite(<?= $favorite['id'] ?>)"
+                                            class="p-1.5 text-pink-500 hover:text-pink-700 bg-pink-50 hover:bg-pink-100 rounded transition"
+                                            title="Remove from saved">
+                                        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </button>
+                                    <a href="<?= APP_URL ?>/profile/<?= $favorite['username'] ?>"
+                                       class="px-3 py-1.5 text-xs font-medium rounded text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition">
+                                        View Profile
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php else: ?>
+                    <div class="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+                        <div class="mx-auto h-14 w-14 bg-pink-50 rounded-full flex items-center justify-center mb-3">
+                            <svg class="h-7 w-7 text-pink-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-gray-900">No saved craftsmen yet</h3>
+                        <p class="mt-1 text-xs text-gray-400">Save craftsmen you trust or want to recommend to clients.</p>
+                        <a href="<?= APP_URL ?>/search" class="mt-4 inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition">
+                            Browse Craftsmen
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                </div>
 
             </div>
 
@@ -673,6 +873,7 @@
 <!-- Tab Switching + Confirmation Modal + Counter-Offer Script -->
 <script>
 var pendingFormId = null;
+var pendingFavoriteId = null;
 
 function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(function(el) {
@@ -693,8 +894,7 @@ function switchTab(tabName) {
         activeBtn.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
         activeBtn.classList.add('border-indigo-500', 'text-indigo-600');
     }
-    
-    // Update URL hash without jumping the page
+
     if (history.replaceState) {
         history.replaceState(null, null, '#' + tabName);
     } else {
@@ -702,13 +902,9 @@ function switchTab(tabName) {
     }
 }
 
-// Read hash IMMEDIATELY (before paint) to prevent tab flicker
 (function() {
     var hash = window.location.hash.substring(1).split('?')[0];
-    
-    // Legacy mapping: old notifications sent #jobs instead of #active
     if (hash === 'jobs') hash = 'active';
-
     if (hash && document.getElementById('tab-' + hash)) {
         switchTab(hash);
     } else {
@@ -716,13 +912,9 @@ function switchTab(tabName) {
     }
 })();
 
-// Listen for hash changes when navigating via back/forward or typing in the address bar
 window.addEventListener('hashchange', function() {
     var hash = window.location.hash.substring(1).split('?')[0];
-    
-    // Legacy mapping: old notifications sent #jobs instead of #active
     if (hash === 'jobs') hash = 'active';
-
     if (hash && document.getElementById('tab-' + hash)) {
         switchTab(hash);
     }
@@ -730,6 +922,7 @@ window.addEventListener('hashchange', function() {
 
 function showConfirmModal(formId, title, message, type) {
     pendingFormId = formId;
+    pendingFavoriteId = null;
     document.getElementById('modal-title').textContent = title;
     document.getElementById('modal-message').textContent = message;
 
@@ -755,19 +948,58 @@ function showConfirmModal(formId, title, message, type) {
 function hideConfirmModal() {
     document.getElementById('confirm-modal').classList.add('hidden');
     pendingFormId = null;
+    pendingFavoriteId = null;
 }
 
 function confirmAction() {
+    hideConfirmModal();
     if (pendingFormId) {
         document.getElementById(pendingFormId).submit();
+    } else if (pendingFavoriteId) {
+        removeFavorite(pendingFavoriteId);
+        pendingFavoriteId = null;
     }
 }
 
-// Counter-Offer Modal
+function confirmRemoveFavorite(id) {
+    pendingFavoriteId = id;
+    pendingFormId = null;
+
+    document.getElementById('modal-title').innerText = 'Remove from Saved';
+    document.getElementById('modal-message').innerText = 'Are you sure you want to remove this craftsman from your saved list?';
+    document.getElementById('modal-icon-accept').classList.add('hidden');
+    document.getElementById('modal-icon-decline').classList.remove('hidden');
+    var confirmBtn = document.getElementById('modal-confirm-btn');
+    confirmBtn.innerText = 'Remove';
+    confirmBtn.className = 'px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition duration-150';
+    document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+async function removeFavorite(craftsmanId) {
+    try {
+        const response = await fetch('<?= APP_URL ?>/favorites/toggle', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                craftsman_id: craftsmanId,
+                csrf_token: '<?= e($_SESSION['csrf_token'] ?? '') ?>'
+            })
+        });
+        const data = await response.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Failed to remove.');
+        }
+    } catch (e) {
+        console.error('Error:', e);
+    }
+}
+
 function openCounterModal(bookingId, description, scheduledDate) {
     document.getElementById('counter-booking-id').value = bookingId;
     document.getElementById('counter-description').value = description;
-    // Convert the date to datetime-local format
     if (scheduledDate) {
         var d = new Date(scheduledDate);
         var local = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + 'T' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
