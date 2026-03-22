@@ -19,6 +19,10 @@ use App\Controllers\PasswordResetController;
 /**
  * Register all web routes here.
  * The $router object is provided by public/index.php
+ *
+ * IMPORTANT: Specific static routes MUST be registered before dynamic
+ * {param} routes that share the same prefix. The router matches in
+ * registration order and stops at the first match.
  */
 
 $router->get('/', [HomeController::class , 'index']);
@@ -30,7 +34,7 @@ $router->get('/privacy', [HomeController::class , 'privacy']);
 $router->get('/search', [SearchController::class , 'index']);
 $router->get('/profile', [ProfileController::class , 'show']);
 
-// Profile Management Routes
+// Profile Management Routes — must come before /profile/{username}
 $router->get('/profile/edit', [ProfileController::class , 'edit']);
 $router->post('/profile/edit', [ProfileController::class , 'update']);
 $router->post('/profile/publish', [ProfileController::class , 'publish']);
@@ -83,14 +87,35 @@ $router->post('/reviews/create', [ReviewController::class , 'store']);
 // Favorite Routes
 $router->post('/favorites/toggle', [FavoriteController::class , 'toggle']);
 
-// Messaging Routes
+// ─── Messaging Routes ──────────────────────────────────────────────────────
+// IMPORTANT ORDER: All static /messages/xxx routes MUST be registered
+// before /messages/{username} — otherwise the dynamic route swallows them.
+
+// Base inbox
 $router->get('/messages', [MessageController::class , 'inbox']);
+
+// Static sub-routes — registered BEFORE the dynamic {username} route
+$router->get('/messages/requests', [MessageController::class , 'requests']);
 $router->get('/messages/conversation', [MessageController::class , 'conversation']);
-$router->post('/messages/send', [MessageController::class , 'send']);
 $router->get('/messages/poll', [MessageController::class , 'poll']);
 $router->get('/messages/unread-count', [MessageController::class , 'unreadCount']);
+$router->get('/messages/user-info', [MessageController::class , 'userInfo']);
+$router->get('/messages/poll-inbox', [MessageController::class , 'pollInbox']);
+
+// Dynamic route — must come after all static /messages/xxx routes
+$router->get('/messages/{username}', [MessageController::class , 'inbox']);
+
+// POST routes (order doesn't matter for these since no dynamic GET conflict)
+$router->post('/messages/send', [MessageController::class , 'send']);
 $router->post('/messages/accept-request', [MessageController::class , 'acceptRequest']);
 $router->post('/messages/decline-request', [MessageController::class , 'declineRequest']);
+$router->post('/messages/pin', [MessageController::class , 'pin']);
+$router->post('/messages/mute', [MessageController::class , 'mute']);
+$router->post('/messages/delete', [MessageController::class , 'delete']);
+$router->post('/messages/delete-message', [MessageController::class , 'deleteSingleMessage']);
+$router->post('/messages/mark-read', [MessageController::class , 'markRead']);
+$router->post('/messages/folder', [MessageController::class , 'setFolder']);
+// ───────────────────────────────────────────────────────────────────────────
 
 // Notification Routes
 $router->get('/notifications', [NotificationController::class , 'index']);

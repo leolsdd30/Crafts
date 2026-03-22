@@ -21,7 +21,7 @@ class ProfileController extends Controller
         // 1. Direct username lookup (e.g., /profile/ahmed_dev)
         if ($username) {
             $user = $userModel->findByUsername($username);
-        } 
+        }
         // 2. Legacy lookup by ID, immediately redirect to clean URL
         elseif (isset($_GET['id'])) {
             $user = $userModel->findById($_GET['id']);
@@ -29,7 +29,7 @@ class ProfileController extends Controller
                 header("Location: " . APP_URL . "/profile/" . $user['username'], true, 301);
                 exit;
             }
-        } 
+        }
         // 3. Fallback for just /profile - redirect to own profile
         elseif (isset($_SESSION['user_id'])) {
             $user = $userModel->findById($_SESSION['user_id']);
@@ -40,8 +40,14 @@ class ProfileController extends Controller
         }
 
         if (!$user) {
-            // Can be expanded to return a proper 404 view later
-            echo "User not found or no valid username.";
+            // Show the proper styled 404 page instead of raw text
+            http_response_code(404);
+            $viewPath = BASE_PATH . '/resources/views/errors/404.php';
+            if (file_exists($viewPath)) {
+                require $viewPath;
+            } else {
+                echo "404 - User Not Found";
+            }
             exit;
         }
 
@@ -76,17 +82,17 @@ class ProfileController extends Controller
             $reviews = $reviewModel->getReviewsForCraftsman($id);
             $rating = $reviewModel->getCraftsmanRating($id);
 
-             if (isset($_SESSION['user_id']) && $_SESSION['user_id'] != $id && ($_SESSION['role'] ?? '') !== 'admin') {
-            $favoriteModel = new Favorite();
-            $isFavorite = $favoriteModel->isFavorite($_SESSION['user_id'], $id);
-                 }
+            if (isset($_SESSION['user_id']) && $_SESSION['user_id'] != $id && ($_SESSION['role'] ?? '') !== 'admin') {
+                $favoriteModel = new Favorite();
+                $isFavorite = $favoriteModel->isFavorite($_SESSION['user_id'], $id);
+            }
         }
 
         // Prepare SEO Tags
         $fullName = $user['first_name'] . ' ' . $user['last_name'];
         $ogTitle = $fullName . ' - Profile on Crafts';
         $metaDesc = "View the profile of {$fullName} on Crafts.";
-        
+
         if ($user['role'] === 'craftsman') {
             $service = $craftsmanDetails['service_category'] ?? 'Professional';
             $loc = !empty($user['wilaya']) ? " in {$user['wilaya']}" : "";
@@ -162,7 +168,7 @@ class ProfileController extends Controller
             if (preg_match('/^[a-zA-Z][a-zA-Z0-9_-]{2,}$/', $username)) {
                 // Sanitize slug
                 $username = strtolower(trim($username));
-                
+
                 // Check if 14 days have passed
                 $canUpdate = true;
                 if (!empty($user['username_updated_at'])) {
@@ -171,7 +177,7 @@ class ProfileController extends Controller
                         $canUpdate = false;
                     }
                 }
-                
+
                 if ($canUpdate) {
                     // Check if unique
                     $existing = $userModel->findByUsername($username);
@@ -199,7 +205,6 @@ class ProfileController extends Controller
             $userModel->executeQuery("UPDATE users SET profile_picture = 'default.png' WHERE id = :id", [
                 'id' => $id
             ]);
-            // If we successfully remove from DB, also delete the old file if it exists and isn't default
             if (!empty($user['profile_picture']) && $user['profile_picture'] !== 'default.png') {
                 $oldFile = BASE_PATH . '/public/uploads/profile/' . $user['profile_picture'];
                 if (file_exists($oldFile)) {
@@ -213,20 +218,16 @@ class ProfileController extends Controller
             $name = basename($_FILES['profile_picture']['name']);
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
-            // Enforce max file size (5MB)
             $maxFileSize = 5 * 1024 * 1024;
             if ($_FILES['profile_picture']['size'] > $maxFileSize) {
-                // File too large — silently skip (or could set an error flash)
+                // File too large — silently skip
             }
             elseif (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                // Verify actual MIME type of the binary content
                 $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                 $finfo = new \finfo(FILEINFO_MIME_TYPE);
                 $detectedMime = $finfo->file($tmpName);
-                
-                // Also verify it's a real image via getimagesize
                 $imageInfo = @getimagesize($tmpName);
-                
+
                 if (in_array($detectedMime, $allowedMimes) && $imageInfo !== false) {
                     $newName = time() . '_' . uniqid() . '.' . $ext;
                     $uploadDir = BASE_PATH . '/public/uploads/profile/';
@@ -241,7 +242,6 @@ class ProfileController extends Controller
                         ]);
                     }
                 }
-                // If MIME/image check fails, silently skip the upload
             }
         }
 
@@ -261,17 +261,14 @@ class ProfileController extends Controller
                 mkdir($uploadDir, 0777, true);
             }
 
-            // Get old images from DB
             $existing = $craftsmanModel->findByUserId($id);
             $oldImages = [];
             if ($existing && !empty($existing['portfolio_images'])) {
                 $oldImages = json_decode($existing['portfolio_images'], true) ?: [];
             }
 
-            // Get images the user chose to KEEP (hidden inputs named existing_images[])
             $keptImages = $_POST['existing_images'] ?? [];
 
-            // Delete removed images from disk
             foreach ($oldImages as $oldImg) {
                 if (!in_array($oldImg, $keptImages)) {
                     $filePath = $uploadDir . $oldImg;
@@ -281,11 +278,10 @@ class ProfileController extends Controller
                 }
             }
 
-            // Upload new images
             $newImages = [];
             if (!empty($_FILES['portfolio_images']['name'][0])) {
                 $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-                $maxFiles = 10 - count($keptImages); // Enforce max 10 total
+                $maxFiles = 10 - count($keptImages);
 
                 for ($i = 0; $i < min(count($_FILES['portfolio_images']['name']), $maxFiles); $i++) {
                     if ($_FILES['portfolio_images']['error'][$i] === UPLOAD_ERR_OK) {
@@ -294,7 +290,6 @@ class ProfileController extends Controller
                         $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
 
                         if (in_array($ext, $allowedExts) && $_FILES['portfolio_images']['size'][$i] <= 5 * 1024 * 1024) {
-                            // Verify actual MIME type of the binary content
                             $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
                             $finfo = new \finfo(FILEINFO_MIME_TYPE);
                             $detectedMime = $finfo->file($tmpName);
@@ -311,9 +306,7 @@ class ProfileController extends Controller
                 }
             }
 
-            // Merge kept + new
             $data['portfolio_images'] = array_merge($keptImages, $newImages);
-
             $craftsmanModel->updateOrCreate($id, $data);
         }
 
@@ -336,18 +329,16 @@ class ProfileController extends Controller
             exit;
         }
 
-        $status = $_POST['status'] ?? 1; // Default to published
+        $status = $_POST['status'] ?? 1;
 
         $userModel = new User();
         $user = $userModel->findById($id);
         $craftsmanModel = new CraftsmanProfile();
-        
-        // Check if profile is setup before publishing
+
         if ($status == 1) {
             $craftsmanDetails = $craftsmanModel->findByUserId($id);
-            
+
             if (empty($craftsmanDetails['id']) || empty($user['wilaya']) || empty($user['phone_number'])) {
-                // Profile incomplete
                 header('Location: ' . APP_URL . '/profile/' . ($user['username'] ?? $id) . '?error=incomplete');
                 exit;
             }
@@ -365,7 +356,7 @@ class ProfileController extends Controller
     public function checkUsername()
     {
         header('Content-Type: application/json');
-        
+
         $username = trim($_GET['username'] ?? '');
         $currentUserId = $_SESSION['user_id'] ?? null;
 

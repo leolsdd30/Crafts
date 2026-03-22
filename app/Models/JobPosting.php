@@ -72,7 +72,7 @@ class JobPosting extends Model
     {
         [$where, $params] = $this->buildFilterSql($filters);
 
-        $sql = "SELECT j.*, u.first_name, u.last_name 
+        $sql = "SELECT j.*, u.first_name, u.last_name, u.username AS poster_username
                 FROM job_postings j
                 JOIN users u ON j.posted_by_user_id = u.id"
              . $where;
@@ -95,7 +95,7 @@ class JobPosting extends Model
     public function findById($id)
     {
         $stmt = $this->db->prepare(
-            "SELECT j.*, u.first_name, u.last_name 
+            "SELECT j.*, u.first_name, u.last_name, u.username AS poster_username
              FROM job_postings j
              JOIN users u ON j.posted_by_user_id = u.id
              WHERE j.id = :id"

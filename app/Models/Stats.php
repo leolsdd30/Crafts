@@ -18,7 +18,7 @@ class Stats extends Model
         $stats['craftsmen'] = (int) $this->query("SELECT COUNT(*) FROM users WHERE role = 'craftsman'")->fetchColumn();
         $stats['admins'] = (int) $this->query("SELECT COUNT(*) FROM users WHERE role = 'admin'")->fetchColumn();
         $stats['total_bookings'] = (int) $this->query("SELECT COUNT(*) FROM requests_bookings")->fetchColumn();
-        $stats['active_bookings'] = (int) $this->query("SELECT COUNT(*) FROM requests_bookings WHERE status = 'hired'")->fetchColumn();
+        $stats['active_bookings'] = (int) $this->query("SELECT COUNT(*) FROM requests_bookings WHERE status = 'in_progress'")->fetchColumn();
         $stats['completed_bookings'] = (int) $this->query("SELECT COUNT(*) FROM requests_bookings WHERE status = 'completed'")->fetchColumn();
         $stats['total_jobs'] = (int) $this->query("SELECT COUNT(*) FROM job_postings")->fetchColumn();
         $stats['open_jobs'] = (int) $this->query("SELECT COUNT(*) FROM job_postings WHERE status = 'open'")->fetchColumn();

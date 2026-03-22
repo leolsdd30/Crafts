@@ -178,7 +178,7 @@ $activeFilterCount = (int)!empty($filters['category'])
                                 <?= htmlspecialchars($job['title']) ?>
                             </h2>
                             <?php if (isset($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'craftsman'): ?>
-                            <a href="<?= APP_URL ?>/messages/conversation?with=<?= $job['posted_by_user_id'] ?>"
+                            <a href="<?= APP_URL ?>/messages/<?= htmlspecialchars($job['poster_username'] ?? '') ?>"
                                title="Message homeowner"
                                class="flex-shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-all duration-150">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

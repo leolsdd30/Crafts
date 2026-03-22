@@ -277,9 +277,9 @@ class JobBoardController extends Controller
                 'Your quote on "' . $job['title'] . '" has been accepted!',
                 APP_URL . '/craftsman/dashboard#active'
             );
-            header("Location: " . APP_URL . "/jobs/" . $quote['job_posting_id'] . "?success=quote_accepted");
+            header("Location: " . APP_URL . "/homeowner/dashboard?success=quote_accepted#quotes");
         } else {
-            header("Location: " . APP_URL . "/jobs/" . $quote['job_posting_id'] . "?error=accept_failed");
+            header("Location: " . APP_URL . "/homeowner/dashboard?error=accept_failed#quotes");
         }
         exit;
     }
@@ -323,7 +323,7 @@ class JobBoardController extends Controller
             APP_URL . '/craftsman/dashboard#quotes'
         );
 
-        header("Location: " . APP_URL . "/jobs/" . $quote['job_posting_id'] . "?success=quote_rejected");
+        header("Location: " . APP_URL . "/homeowner/dashboard?success=quote_rejected#quotes");
         exit;
     }
 }

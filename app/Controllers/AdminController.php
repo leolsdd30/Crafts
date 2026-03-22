@@ -56,7 +56,6 @@ class AdminController extends Controller
         $perPage = 15;
         $offset  = ($page - 1) * $perPage;
 
-        // Map sort value to SQL ORDER BY
         $orderBy = match($sortFilter) {
             'date_asc'  => 'u.created_at ASC',
             'name_asc'  => 'u.first_name ASC, u.last_name ASC',
@@ -108,7 +107,6 @@ class AdminController extends Controller
         $stmt->execute($params);
         $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        // Distinct wilayas for filter dropdown
         $wilayaStmt = $db->query("SELECT DISTINCT wilaya FROM users WHERE wilaya IS NOT NULL AND wilaya != '' ORDER BY wilaya ASC");
         $wilayas = $wilayaStmt->fetchAll(\PDO::FETCH_COLUMN);
 
@@ -160,7 +158,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Craftsman verification page — with search, wilaya, category, sort, and pagination.
+     * Craftsman verification page.
      */
     public function verifications()
     {
@@ -178,7 +176,6 @@ class AdminController extends Controller
         $perPage = 12;
         $offset  = ($page - 1) * $perPage;
 
-        // Map sort value to SQL ORDER BY
         $orderBy = match($sortFilter) {
             'date_asc'  => 'u.created_at ASC',
             'name_asc'  => 'u.first_name ASC, u.last_name ASC',
@@ -211,13 +208,11 @@ class AdminController extends Controller
             $params['category'] = $categoryFilter;
         }
 
-        // Count total
         $countStmt = $db->prepare("SELECT COUNT(cp.id) " . $baseSql);
         $countStmt->execute($params);
         $totalCraftsmen = (int) $countStmt->fetchColumn();
         $totalPages     = (int) ceil($totalCraftsmen / $perPage);
 
-        // Fetch page
         $selectSql = "SELECT cp.*, u.first_name, u.last_name, u.email,
                              u.profile_picture, u.wilaya, u.username,
                              u.created_at as user_created " . $baseSql;
@@ -227,7 +222,6 @@ class AdminController extends Controller
         $stmt->execute($params);
         $craftsmen = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        // Distinct wilayas and categories for dropdowns
         $wilayaStmt = $db->query(
             "SELECT DISTINCT u.wilaya FROM craftsmen_profiles cp
              JOIN users u ON cp.user_id = u.id
@@ -288,18 +282,28 @@ class AdminController extends Controller
         $stmt = $db->prepare("UPDATE craftsmen_profiles SET is_verified = :status WHERE user_id = :uid");
         $stmt->execute(['status' => $newStatus, 'uid' => $userId]);
 
+        // Use username for the notification link so the URL resolves correctly
+        // $profile already contains 'username' from the JOIN with users in findByUserId()
+        $profileUrl = !empty($profile['username'])
+            ? APP_URL . '/profile/' . $profile['username']
+            : APP_URL . '/profile/' . $userId; // fallback — should never happen
+
         $notif = new Notification();
         if ($newStatus) {
             $notif->send(
-                $userId, 'booking_accepted', 'Profile Verified!',
+                $userId,
+                'booking_accepted',
+                'Profile Verified!',
                 'Congratulations! Your profile has been verified by Crafts. You now have a verified badge!',
-                APP_URL . '/profile/' . $userId
+                $profileUrl
             );
         } else {
             $notif->send(
-                $userId, 'booking_declined', 'Verification Removed',
+                $userId,
+                'booking_declined',
+                'Verification Removed',
                 'Your verified status has been removed. Please contact support for more info.',
-                APP_URL . '/profile/' . $userId
+                $profileUrl
             );
         }
 

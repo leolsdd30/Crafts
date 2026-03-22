@@ -162,7 +162,7 @@
                                 </p>
                                 <span class="text-xs text-gray-400 whitespace-nowrap flex-shrink-0"><?= $timeAgo ?></span>
                             </div>
-                            <p class="text-sm text-gray-500 mt-0.5 leading-relaxed"><?= htmlspecialchars($notif['message']) ?></p>
+                            <p class="text-sm text-gray-500 mt-0.5 leading-relaxed break-words"><?= htmlspecialchars($notif['message']) ?></p>
 
                             <div class="flex items-center gap-4 mt-2">
                                 <?php if ($notifHref): ?>

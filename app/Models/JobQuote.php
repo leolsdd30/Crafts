@@ -159,6 +159,44 @@ class JobQuote extends Model
             );
             $stmt->execute(['job_id' => $jobId]);
 
+            // 4. Create an entry in requests_bookings so it appears in the Bookings tab
+            // Fetch job details first to populate the booking record
+            $stmt = $this->db->prepare("SELECT * FROM job_postings WHERE id = :job_id");
+            $stmt->execute(['job_id' => $jobId]);
+            $jobDetails = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($jobDetails) {
+                $stmt = $this->db->prepare(
+                    "INSERT INTO requests_bookings (
+                        homeowner_id, 
+                        craftsman_id, 
+                        job_posting_id, 
+                        description, 
+                        address, 
+                        scheduled_date, 
+                        quoted_price, 
+                        status
+                    ) VALUES (
+                        :homeowner_id, 
+                        :craftsman_id, 
+                        :job_id, 
+                        :description, 
+                        :address, 
+                        NOW(), 
+                        :price, 
+                        'in_progress'
+                    )"
+                );
+                $stmt->execute([
+                    'homeowner_id' => $jobDetails['posted_by_user_id'],
+                    'craftsman_id' => $quote['craftsman_id'],
+                    'job_id'       => $jobId,
+                    'description'  => "Re: " . $jobDetails['title'] . " - " . ($quote['cover_message'] ?? 'Accepted quote'),
+                    'address'      => $jobDetails['address'],
+                    'price'        => $quote['quoted_price']
+                ]);
+            }
+
             $this->db->commit();
             return true;
         }

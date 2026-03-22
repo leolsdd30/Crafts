@@ -789,6 +789,13 @@ if ($postDate) {
     document.getElementById('dp-confirm').addEventListener('click', function(){
         if (ds.selD === null) return;
         ds.confirmed = true;
+        // Auto-confirm time with default 09:00 if user hasn't picked one yet
+        // This makes the time button show "9:00 AM" instead of blank "Time"
+        if (!ts.confirmed) {
+            ts.confirmed = true;
+            updateTimeTrigger();
+            updateTimeFooter();
+        }
         updateDateTrigger(); syncHidden();
         closePopup(ds, dpPopup, dpTrigger);
     });
